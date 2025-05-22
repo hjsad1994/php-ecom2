@@ -4,6 +4,9 @@
     <h1>Thêm sản phẩm mới</h1>
 </div>
 
+
+<script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+
 <?php if (!empty($errors)): ?>
 <div class="alert alert-danger">
     <ul class="mb-0">
@@ -25,7 +28,7 @@
             
             <div class="mb-3">
                 <label for="description" class="form-label">Mô tả:</label>
-                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
             </div>
             
             <div class="mb-3">
@@ -36,7 +39,6 @@
                 </div>
             </div>
             
-            <!-- Add the image upload field -->
             <div class="mb-3">
                 <label for="image" class="form-label">Hình ảnh sản phẩm:</label>
                 <input type="file" class="form-control" id="image" name="image" accept="image/*">
@@ -68,6 +70,19 @@
 </div>
 
 <script>
+CKEDITOR.replace('description', {
+    height: 300,
+    toolbarGroups: [
+        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
+        { name: 'styles', groups: [ 'styles' ] },
+        { name: 'colors', groups: [ 'colors' ] },
+        { name: 'insert', groups: [ 'insert' ] },
+        { name: 'tools', groups: [ 'tools' ] },
+        { name: 'others', groups: [ 'others' ] }
+    ]
+});
+
 function validateForm() {
     let name = document.getElementById('name').value;
     let price = document.getElementById('price').value;

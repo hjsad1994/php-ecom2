@@ -50,7 +50,8 @@ class ProductModel
                   VALUES (:name, :description, :price, :category_id, :image)";
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
-        $description = htmlspecialchars(strip_tags($description));
+        // Don't strip HTML tags from description to preserve formatting
+        $description = htmlspecialchars_decode($description);
         $price = htmlspecialchars(strip_tags($price));
         $category_id = htmlspecialchars(strip_tags($category_id));
         $stmt->bindParam(':name', $name);
@@ -79,7 +80,8 @@ class ProductModel
         
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
-        $description = htmlspecialchars(strip_tags($description));
+        // Don't strip HTML tags from description to preserve formatting
+        $description = htmlspecialchars_decode($description);
         $price = htmlspecialchars(strip_tags($price));
         
         if ($category_id !== null) {

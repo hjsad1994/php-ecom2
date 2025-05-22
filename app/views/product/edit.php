@@ -2,6 +2,9 @@
 
 <h1 class="mb-4">Sửa sản phẩm</h1>
 
+
+<script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+
 <div class="card shadow">
     <div class="card-body">
         <form method="POST" action="/webbanhang/Product/update" class="needs-validation" enctype="multipart/form-data" novalidate>
@@ -16,7 +19,7 @@
             
             <div class="mb-3">
                 <label for="description" class="form-label">Mô tả:</label>
-                <textarea class="form-control" id="description" name="description" rows="3" required><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                <textarea class="form-control" id="description" name="description" rows="5" required><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></textarea>
             </div>
             
             <div class="mb-3">
@@ -67,6 +70,20 @@
 </div>
 
 <script>
+// Initialize CKEditor
+CKEDITOR.replace('description', {
+    height: 300,
+    toolbarGroups: [
+        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
+        { name: 'styles', groups: [ 'styles' ] },
+        { name: 'colors', groups: [ 'colors' ] },
+        { name: 'insert', groups: [ 'insert' ] },
+        { name: 'tools', groups: [ 'tools' ] },
+        { name: 'others', groups: [ 'others' ] }
+    ]
+});
+
 // Form validation
 (function() {
     'use strict';

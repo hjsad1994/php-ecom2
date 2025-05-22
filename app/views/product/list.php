@@ -25,7 +25,9 @@
                 <?php endif; ?>
                 <div class="card-body">
                     <h5 class="card-title"><?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?></h5>
-                    <p class="card-text"><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></p>
+                    <div class="card-text">
+                        <?php echo html_entity_decode($product->description); ?>
+                    </div>
                     <p class="card-text">
                         <span class="badge bg-info text-dark">
                             Giá: <?php echo number_format($product->price, 0, ',', '.'); ?> đ
