@@ -16,11 +16,11 @@
 
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <form method="POST" action="/webbanhang/Product/save" onsubmit="return validateForm();" class="needs-validation" novalidate>
+        <form method="POST" action="/webbanhang/Product/save" onsubmit="return validateForm();" class="needs-validation" enctype="multipart/form-data" novalidate>
             <div class="mb-3">
                 <label for="name" class="form-label">Tên sản phẩm:</label>
                 <input type="text" class="form-control" id="name" name="name" required>
-                <div class="form-text">Tên sản phẩm phải có từ 10 đến 100 ký tự</div>
+                <div class="form-text">Tên sản phẩm phải có từ 5 đến 100 ký tự</div>
             </div>
             
             <div class="mb-3">
@@ -34,6 +34,13 @@
                     <input type="number" class="form-control" id="price" name="price" step="0.01" required>
                     <span class="input-group-text">đ</span>
                 </div>
+            </div>
+            
+            <!-- Add the image upload field -->
+            <div class="mb-3">
+                <label for="image" class="form-label">Hình ảnh sản phẩm:</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                <div class="form-text">Chọn ảnh định dạng JPG, PNG hoặc GIF</div>
             </div>
             
             <div class="mb-3">

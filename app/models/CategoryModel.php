@@ -70,14 +70,30 @@ class CategoryModel
     
     public function deleteCategory($id)
     {
-        $query = "DELETE FROM " . $this->table_name . " WHERE id=:id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $id);
-        
-        if ($stmt->execute()) {
+        try {
+            // First, begin a transaction
+            $this->conn->beginTransaction();
+            
+            // Update all products in this category to have NULL category_id
+            $update_query = "UPDATE product SET category_id = NULL WHERE category_id = :category_id";
+            $update_stmt = $this->conn->prepare($update_query);
+            $update_stmt->bindParam(':category_id', $id);
+            $update_stmt->execute();
+            
+            // Then delete the category
+            $delete_query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
+            $delete_stmt = $this->conn->prepare($delete_query);
+            $delete_stmt->bindParam(':id', $id);
+            $delete_stmt->execute();
+            
+            // If everything worked, commit the transaction
+            $this->conn->commit();
             return true;
+        } catch (PDOException $e) {
+            // If anything went wrong, roll back the transaction
+            $this->conn->rollBack();
+            return false;
         }
-        return false;
     }
 }
 ?>

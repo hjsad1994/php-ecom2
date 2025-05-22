@@ -16,6 +16,13 @@
         <?php foreach ($products as $product): ?>
         <div class="col">
             <div class="card h-100 shadow-sm">
+                <?php if (!empty($product->image)): ?>
+                    <div class="text-center pt-3">
+                        <img src="/webbanhang/public/uploads/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
+                             class="card-img-top" alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>"
+                             style="max-height: 200px; width: auto; max-width: 100%;">
+                    </div>
+                <?php endif; ?>
                 <div class="card-body">
                     <h5 class="card-title"><?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?></h5>
                     <p class="card-text"><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -23,9 +30,11 @@
                         <span class="badge bg-info text-dark">
                             Giá: <?php echo number_format($product->price, 0, ',', '.'); ?> đ
                         </span>
+                        <?php if (!empty($product->category_name)): ?>
                         <span class="badge bg-secondary">
                             Danh mục: <?php echo htmlspecialchars($product->category_name, ENT_QUOTES, 'UTF-8'); ?>
                         </span>
+                        <?php endif; ?>
                     </p>
                 </div>
                 <div class="card-footer bg-transparent border-top-0">

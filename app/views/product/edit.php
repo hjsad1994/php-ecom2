@@ -4,7 +4,7 @@
 
 <div class="card shadow">
     <div class="card-body">
-        <form method="POST" action="/webbanhang/Product/update" class="needs-validation" novalidate>
+        <form method="POST" action="/webbanhang/Product/update" class="needs-validation" enctype="multipart/form-data" novalidate>
             <input type="hidden" name="id" value="<?php echo $product->id; ?>">
             
             <div class="mb-3">
@@ -29,15 +29,29 @@
             </div>
             
             <div class="mb-3">
+                <label for="image" class="form-label">Hình ảnh sản phẩm:</label>
+                <?php if (!empty($product->image)): ?>
+                    <div class="mb-2">
+                        <img src="/webbanhang/public/uploads/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
+                             alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>" 
+                             class="img-thumbnail" style="max-height: 150px;">
+                    </div>
+                <?php endif; ?>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                <div class="form-text">Chọn ảnh mới để thay đổi (định dạng JPG, PNG hoặc GIF)</div>
+            </div>
+            
+            <div class="mb-3">
                 <label for="category_id" class="form-label">Danh mục:</label>
-                <select class="form-select" id="category_id" name="category_id" required>
-                    <option value="">-- Chọn danh mục --</option>
+                <select class="form-select" id="category_id" name="category_id">
+                    <option value="">-- Không có danh mục --</option>
                     <?php foreach ($categories as $category): ?>
                         <option value="<?php echo $category->id; ?>" <?php echo ($product->category_id == $category->id) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($category->name, ENT_QUOTES, 'UTF-8'); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <div class="form-text">Chọn "Không có danh mục" nếu bạn muốn bỏ phân loại danh mục cho sản phẩm này.</div>
             </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
