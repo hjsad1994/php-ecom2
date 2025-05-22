@@ -53,11 +53,18 @@ class ProductModel
         // Don't strip HTML tags from description to preserve formatting
         $description = htmlspecialchars_decode($description);
         $price = htmlspecialchars(strip_tags($price));
-        $category_id = htmlspecialchars(strip_tags($category_id));
+        
+        // Check if category_id is null before applying string functions
+        if ($category_id !== null && $category_id !== '') {
+            $category_id = htmlspecialchars(strip_tags($category_id));
+        } else {
+            $category_id = null; // Make sure it's explicitly null for database
+        }
+        
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':price', $price);
-        $stmt->bindParam(':category_id', $category_id);
+        $stmt->bindParam(':category_id', $category_id, PDO::PARAM_INT); // Use PDO::PARAM_INT to handle NULL properly
         $stmt->bindParam(':image', $image);
         
         if ($stmt->execute()) {

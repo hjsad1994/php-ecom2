@@ -47,7 +47,7 @@
             
             <div class="mb-3">
                 <label for="category_id" class="form-label">Danh mục:</label>
-                <select class="form-select" id="category_id" name="category_id" required>
+                <select class="form-select" id="category_id" name="category_id">
                     <option value="">-- Chọn danh mục --</option>
                     <?php foreach ($categories as $category): ?>
                         <option value="<?php echo $category->id; ?>">
@@ -55,6 +55,7 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <div class="form-text">Bạn có thể thêm sản phẩm mà không cần chọn danh mục.</div>
             </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
