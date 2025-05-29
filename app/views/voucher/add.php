@@ -106,6 +106,13 @@ include 'app/views/shares/header.php';
                             Sản phẩm cụ thể
                         </label>
                     </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="applies_to" id="specific_categories" 
+                               value="specific_categories">
+                        <label class="form-check-label" for="specific_categories">
+                            Danh mục cụ thể
+                        </label>
+                    </div>
                 </div>
             </div>
             
@@ -119,6 +126,25 @@ include 'app/views/shares/header.php';
                         <label class="form-check-label" for="product_<?php echo $product->id; ?>">
                             <?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>
                             <small class="text-muted">(<?php echo number_format($product->price, 0, ',', '.'); ?> đ)</small>
+                        </label>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            
+            <div class="mb-3" id="categories_selection" style="display: none;">
+                <label class="form-label">Chọn danh mục:</label>
+                <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                    <?php foreach ($categories as $category): ?>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="category_ids[]" 
+                               value="<?php echo $category->id; ?>" id="category_<?php echo $category->id; ?>">
+                        <label class="form-check-label" for="category_<?php echo $category->id; ?>">
+                            <i class="bi bi-tag-fill me-1"></i>
+                            <?php echo htmlspecialchars($category->name, ENT_QUOTES, 'UTF-8'); ?>
+                            <?php if (!empty($category->description)): ?>
+                                <small class="text-muted d-block"><?php echo htmlspecialchars($category->description, ENT_QUOTES, 'UTF-8'); ?></small>
+                            <?php endif; ?>
                         </label>
                     </div>
                     <?php endforeach; ?>
@@ -165,13 +191,19 @@ include 'app/views/shares/header.php';
 document.addEventListener('DOMContentLoaded', function() {
     const appliesTo = document.querySelectorAll('input[name="applies_to"]');
     const productsSelection = document.getElementById('products_selection');
+    const categoriesSelection = document.getElementById('categories_selection');
     
     appliesTo.forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'specific_products') {
                 productsSelection.style.display = 'block';
+                categoriesSelection.style.display = 'none';
+            } else if (this.value === 'specific_categories') {
+                productsSelection.style.display = 'none';
+                categoriesSelection.style.display = 'block';
             } else {
                 productsSelection.style.display = 'none';
+                categoriesSelection.style.display = 'none';
             }
         });
     });

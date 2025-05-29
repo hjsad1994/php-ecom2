@@ -59,8 +59,12 @@ include 'app/views/shares/header.php';
                             <td>
                                 <?php if ($voucher->applies_to == 'all_products'): ?>
                                     <span class="badge bg-success">Tất cả sản phẩm</span>
+                                <?php elseif ($voucher->applies_to == 'specific_products'): ?>
+                                    <span class="badge bg-primary">Sản phẩm cụ thể</span>
+                                <?php elseif ($voucher->applies_to == 'specific_categories'): ?>
+                                    <span class="badge bg-info">Danh mục cụ thể</span>
                                 <?php else: ?>
-                                    <span class="badge bg-secondary">Sản phẩm cụ thể</span>
+                                    <span class="badge bg-secondary">Không xác định</span>
                                 <?php endif; ?>
                             </td>
                             <td>

@@ -30,6 +30,10 @@ class VoucherController
     public function add()
     {
         $products = $this->productModel->getProducts();
+        // Thêm categories
+        require_once('app/models/CategoryModel.php');
+        $categoryModel = new CategoryModel($this->db);
+        $categories = $categoryModel->getCategories();
         include 'app/views/voucher/add.php';
     }
     
@@ -46,6 +50,7 @@ class VoucherController
                 'max_discount_amount' => !empty($_POST['max_discount_amount']) ? floatval($_POST['max_discount_amount']) : null,
                 'applies_to' => $_POST['applies_to'] ?? 'all_products',
                 'product_ids' => null,
+                'category_ids' => null,
                 'usage_limit' => !empty($_POST['usage_limit']) ? intval($_POST['usage_limit']) : null,
                 'start_date' => $_POST['start_date'] ?? '',
                 'end_date' => $_POST['end_date'] ?? '',
@@ -57,10 +62,19 @@ class VoucherController
                 $data['product_ids'] = json_encode($_POST['product_ids']);
             }
             
+            // Handle category selection for specific categories
+            if ($data['applies_to'] == 'specific_categories' && !empty($_POST['category_ids'])) {
+                $data['category_ids'] = json_encode($_POST['category_ids']);
+            }
+            
             $result = $this->voucherModel->addVoucher($data);
             if (is_array($result)) {
                 $errors = $result;
                 $products = $this->productModel->getProducts();
+                // Thêm categories khi có lỗi
+                require_once('app/models/CategoryModel.php');
+                $categoryModel = new CategoryModel($this->db);
+                $categories = $categoryModel->getCategories();
                 include 'app/views/voucher/add.php';
             } else {
                 header('Location: /webbanhang/Voucher');
@@ -72,8 +86,12 @@ class VoucherController
     public function edit($id)
     {
         $voucher = $this->voucherModel->getVoucherById($id);
-        // Sử dụng getProducts() thay vì truy vấn trực tiếp để tránh lỗi tên bảng
         $products = $this->productModel->getProducts();
+        // Thêm categories
+        require_once('app/models/CategoryModel.php');
+        $categoryModel = new CategoryModel($this->db);
+        $categories = $categoryModel->getCategories();
+        
         if ($voucher) {
             include 'app/views/voucher/edit.php';
         } else {
@@ -94,6 +112,7 @@ class VoucherController
                 'max_discount_amount' => !empty($_POST['max_discount_amount']) ? floatval($_POST['max_discount_amount']) : null,
                 'applies_to' => $_POST['applies_to'] ?? 'all_products',
                 'product_ids' => null,
+                'category_ids' => null,
                 'usage_limit' => !empty($_POST['usage_limit']) ? intval($_POST['usage_limit']) : null,
                 'start_date' => $_POST['start_date'] ?? '',
                 'end_date' => $_POST['end_date'] ?? '',
@@ -102,6 +121,11 @@ class VoucherController
             
             if ($data['applies_to'] == 'specific_products' && !empty($_POST['product_ids'])) {
                 $data['product_ids'] = json_encode($_POST['product_ids']);
+            }
+            
+            // Thêm xử lý category_ids
+            if ($data['applies_to'] == 'specific_categories' && !empty($_POST['category_ids'])) {
+                $data['category_ids'] = json_encode($_POST['category_ids']);
             }
             
             if ($this->voucherModel->updateVoucher($id, $data)) {

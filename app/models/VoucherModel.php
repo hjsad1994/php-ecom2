@@ -129,6 +129,12 @@ class VoucherModel
             $errors[] = 'Phần trăm giảm giá không được vượt quá 100%';
         }
         
+        // Validate applies_to
+        $validAppliesTo = ['all_products', 'specific_products', 'specific_categories'];
+        if (!in_array($data['applies_to'], $validAppliesTo)) {
+            $errors[] = 'Loại áp dụng voucher không hợp lệ';
+        }
+        
         if (!empty($errors)) {
             return $errors;
         }
@@ -142,29 +148,45 @@ class VoucherModel
             return ['Mã voucher đã tồn tại'];
         }
         
-        $query = "INSERT INTO " . $this->table_name . " 
-                  (code, name, description, discount_type, discount_value, min_order_amount, 
-                   max_discount_amount, applies_to, product_ids, category_ids, usage_limit, start_date, end_date, is_active) 
-                  VALUES (:code, :name, :description, :discount_type, :discount_value, :min_order_amount, 
-                          :max_discount_amount, :applies_to, :product_ids, :category_ids, :usage_limit, :start_date, :end_date, :is_active)";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':code', $data['code']);
-        $stmt->bindParam(':name', $data['name']);
-        $stmt->bindParam(':description', $data['description']);
-        $stmt->bindParam(':discount_type', $data['discount_type']);
-        $stmt->bindParam(':discount_value', $data['discount_value']);
-        $stmt->bindParam(':min_order_amount', $data['min_order_amount']);
-        $stmt->bindParam(':max_discount_amount', $data['max_discount_amount']);
-        $stmt->bindParam(':applies_to', $data['applies_to']);
-        $stmt->bindParam(':product_ids', $data['product_ids']);
-        $stmt->bindParam(':category_ids', $data['category_ids']);
-        $stmt->bindParam(':usage_limit', $data['usage_limit']);
-        $stmt->bindParam(':start_date', $data['start_date']);
-        $stmt->bindParam(':end_date', $data['end_date']);
-        $stmt->bindParam(':is_active', $data['is_active']);
-        
-        return $stmt->execute();
+        try {
+            // Debug log để kiểm tra dữ liệu
+            error_log("Adding voucher with applies_to: " . $data['applies_to']);
+            
+            $query = "INSERT INTO " . $this->table_name . " 
+                      (code, name, description, discount_type, discount_value, min_order_amount, 
+                       max_discount_amount, applies_to, product_ids, category_ids, usage_limit, start_date, end_date, is_active) 
+                      VALUES (:code, :name, :description, :discount_type, :discount_value, :min_order_amount, 
+                              :max_discount_amount, :applies_to, :product_ids, :category_ids, :usage_limit, :start_date, :end_date, :is_active)";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':code', $data['code']);
+            $stmt->bindParam(':name', $data['name']);
+            $stmt->bindParam(':description', $data['description']);
+            $stmt->bindParam(':discount_type', $data['discount_type']);
+            $stmt->bindParam(':discount_value', $data['discount_value']);
+            $stmt->bindParam(':min_order_amount', $data['min_order_amount']);
+            $stmt->bindParam(':max_discount_amount', $data['max_discount_amount']);
+            $stmt->bindParam(':applies_to', $data['applies_to']);
+            $stmt->bindParam(':product_ids', $data['product_ids']);
+            $stmt->bindParam(':category_ids', $data['category_ids']);
+            $stmt->bindParam(':usage_limit', $data['usage_limit']);
+            $stmt->bindParam(':start_date', $data['start_date']);
+            $stmt->bindParam(':end_date', $data['end_date']);
+            $stmt->bindParam(':is_active', $data['is_active']);
+            
+            $result = $stmt->execute();
+            
+            if (!$result) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("Database error: " . print_r($errorInfo, true));
+                return ['Lỗi database: ' . $errorInfo[2]];
+            }
+            
+            return $result;
+        } catch (Exception $e) {
+            error_log("VoucherModel::addVoucher error: " . $e->getMessage());
+            return ['Đã xảy ra lỗi khi thêm voucher: ' . $e->getMessage()];
+        }
     }
     
     public function updateVoucher($id, $data)
