@@ -39,6 +39,75 @@ class VoucherModel
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
     
+    public function validateVoucher($code, $cartTotal, $productIds = [])
+    {
+        $voucher = $this->getVoucherByCode($code);
+        
+        if (!$voucher) {
+            return ['valid' => false, 'message' => 'Mã voucher không tồn tại'];
+        }
+        
+        // Check if voucher is active FIRST
+        if (!$voucher->is_active) {
+            return ['valid' => false, 'message' => 'Mã voucher đã bị vô hiệu hóa'];
+        }
+        
+        // Check date range - sử dụng timestamp để so sánh chính xác
+        $now = time();
+        $startTime = strtotime($voucher->start_date);
+        $endTime = strtotime($voucher->end_date);
+        
+        if ($now < $startTime) {
+            return ['valid' => false, 'message' => 'Mã voucher chưa có hiệu lực. Bắt đầu từ: ' . date('d/m/Y H:i', $startTime)];
+        }
+        
+        if ($now > $endTime) {
+            return ['valid' => false, 'message' => 'Mã voucher đã hết hạn vào: ' . date('d/m/Y H:i', $endTime)];
+        }
+        
+        // Check usage limit
+        if ($voucher->usage_limit && $voucher->used_count >= $voucher->usage_limit) {
+            return ['valid' => false, 'message' => 'Mã voucher đã hết lượt sử dụng'];
+        }
+        
+        // Check minimum order amount
+        if ($cartTotal < $voucher->min_order_amount) {
+            return ['valid' => false, 'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($voucher->min_order_amount, 0, ',', '.') . ' đ để sử dụng voucher'];
+        }
+        
+        // Check product/category applicability
+        if ($voucher->applies_to == 'specific_products' && !empty($voucher->product_ids)) {
+            $allowedProducts = json_decode($voucher->product_ids, true);
+            if (!array_intersect($productIds, $allowedProducts)) {
+                return ['valid' => false, 'message' => 'Voucher không áp dụng cho các sản phẩm trong giỏ hàng'];
+            }
+        } elseif ($voucher->applies_to == 'specific_categories' && !empty($voucher->category_ids)) {
+            // Get categories of products in cart
+            $allowedCategories = json_decode($voucher->category_ids, true);
+            $cartCategories = $this->getProductCategories($productIds);
+            
+            if (!array_intersect($cartCategories, $allowedCategories)) {
+                return ['valid' => false, 'message' => 'Voucher không áp dụng cho danh mục sản phẩm trong giỏ hàng'];
+            }
+        }
+        
+        return ['valid' => true, 'voucher' => $voucher];
+    }
+
+    private function getProductCategories($productIds)
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+        
+        $placeholders = str_repeat('?,', count($productIds) - 1) . '?';
+        $query = "SELECT DISTINCT category_id FROM product WHERE id IN ($placeholders) AND category_id IS NOT NULL";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($productIds);
+        
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+    
     public function addVoucher($data)
     {
         $errors = [];
@@ -75,12 +144,11 @@ class VoucherModel
         
         $query = "INSERT INTO " . $this->table_name . " 
                   (code, name, description, discount_type, discount_value, min_order_amount, 
-                   max_discount_amount, applies_to, product_ids, usage_limit, start_date, end_date, is_active) 
-                  VALUES (:code, :name, :description, :discount_type, :discount_value, :min_order_amount,
-                          :max_discount_amount, :applies_to, :product_ids, :usage_limit, :start_date, :end_date, :is_active)";
+                   max_discount_amount, applies_to, product_ids, category_ids, usage_limit, start_date, end_date, is_active) 
+                  VALUES (:code, :name, :description, :discount_type, :discount_value, :min_order_amount, 
+                          :max_discount_amount, :applies_to, :product_ids, :category_ids, :usage_limit, :start_date, :end_date, :is_active)";
         
         $stmt = $this->conn->prepare($query);
-        
         $stmt->bindParam(':code', $data['code']);
         $stmt->bindParam(':name', $data['name']);
         $stmt->bindParam(':description', $data['description']);
@@ -90,6 +158,7 @@ class VoucherModel
         $stmt->bindParam(':max_discount_amount', $data['max_discount_amount']);
         $stmt->bindParam(':applies_to', $data['applies_to']);
         $stmt->bindParam(':product_ids', $data['product_ids']);
+        $stmt->bindParam(':category_ids', $data['category_ids']);
         $stmt->bindParam(':usage_limit', $data['usage_limit']);
         $stmt->bindParam(':start_date', $data['start_date']);
         $stmt->bindParam(':end_date', $data['end_date']);
@@ -100,16 +169,15 @@ class VoucherModel
     
     public function updateVoucher($id, $data)
     {
-        $query = "UPDATE " . $this->table_name . " 
-                  SET name=:name, description=:description, discount_type=:discount_type, 
-                      discount_value=:discount_value, min_order_amount=:min_order_amount,
-                      max_discount_amount=:max_discount_amount, applies_to=:applies_to, 
-                      product_ids=:product_ids, usage_limit=:usage_limit, 
-                      start_date=:start_date, end_date=:end_date, is_active=:is_active
-                  WHERE id=:id";
+        $query = "UPDATE " . $this->table_name . " SET 
+                  name = :name, description = :description, discount_type = :discount_type, 
+                  discount_value = :discount_value, min_order_amount = :min_order_amount, 
+                  max_discount_amount = :max_discount_amount, applies_to = :applies_to, 
+                  product_ids = :product_ids, category_ids = :category_ids, usage_limit = :usage_limit, 
+                  start_date = :start_date, end_date = :end_date, is_active = :is_active 
+                  WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
-        
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':name', $data['name']);
         $stmt->bindParam(':description', $data['description']);
@@ -119,6 +187,7 @@ class VoucherModel
         $stmt->bindParam(':max_discount_amount', $data['max_discount_amount']);
         $stmt->bindParam(':applies_to', $data['applies_to']);
         $stmt->bindParam(':product_ids', $data['product_ids']);
+        $stmt->bindParam(':category_ids', $data['category_ids']);
         $stmt->bindParam(':usage_limit', $data['usage_limit']);
         $stmt->bindParam(':start_date', $data['start_date']);
         $stmt->bindParam(':end_date', $data['end_date']);
@@ -135,7 +204,7 @@ class VoucherModel
         return $stmt->execute();
     }
     
-    public function validateVoucher($code, $cartTotal, $productIds = [])
+    public function validateVoucherOld($code, $cartTotal, $productIds = [])
     {
         $voucher = $this->getVoucherByCode($code);
         

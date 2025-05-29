@@ -43,7 +43,7 @@
         }
         ?>
         
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <i class="bi bi-receipt-cutoff fs-1 mb-2"></i>
@@ -53,7 +53,7 @@
             </div>
         </div>
         
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <i class="bi bi-check-circle-fill fs-1 mb-2"></i>
@@ -63,7 +63,7 @@
             </div>
         </div>
         
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <i class="bi bi-exclamation-triangle-fill fs-1 mb-2"></i>
@@ -73,7 +73,27 @@
             </div>
         </div>
         
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-fill fs-1 mb-2"></i>
+                    <h4><?php echo $stats['pending']; ?></h4>
+                    <p class="mb-0">Đang xử lý</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-x-circle-fill fs-1 mb-2"></i>
+                    <h4><?php echo $stats['cancelled']; ?></h4>
+                    <p class="mb-0">Đã hủy</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <i class="bi bi-currency-dollar fs-1 mb-2"></i>
