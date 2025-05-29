@@ -110,10 +110,23 @@
                                 <?php endforeach; ?>
                             </tbody>
                             <tfoot>
+                                <?php if (isset($orderDetails[0]->voucher_discount) && $orderDetails[0]->voucher_discount > 0): ?>
+                                <tr>
+                                    <th colspan="3" class="text-end">Tạm tính:</th>
+                                    <th class="text-end"><?php echo number_format($calculated_total, 0, ',', '.'); ?> đ</th>
+                                </tr>
+                                <tr class="text-success">
+                                    <th colspan="3" class="text-end">
+                                        <i class="bi bi-ticket-perforated me-1"></i>
+                                        Voucher (<?php echo $orderDetails[0]->voucher_code; ?>):
+                                    </th>
+                                    <th class="text-end">-<?php echo number_format($orderDetails[0]->voucher_discount, 0, ',', '.'); ?> đ</th>
+                                </tr>
+                                <?php endif; ?>
                                 <tr class="table-success">
                                     <th colspan="3" class="text-end fs-5">Tổng cộng:</th>
                                     <th class="text-end fs-5 fw-bold text-success">
-                                        <?php echo number_format($calculated_total, 0, ',', '.'); ?> đ
+                                        <?php echo number_format($orderDetails[0]->total_amount, 0, ',', '.'); ?> đ
                                     </th>
                                 </tr>
                             </tfoot>

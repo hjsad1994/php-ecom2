@@ -225,7 +225,6 @@ class ProductController
 
     public function checkout()
     {
-        // Check if cart is empty
         if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
             header('Location: /webbanhang/Product/cart');
             return;
@@ -236,18 +235,27 @@ class ProductController
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
+        
+        // Apply voucher discount if exists
+        $discount = 0;
+        if (isset($_SESSION['applied_voucher'])) {
+            $discount = $_SESSION['applied_voucher']['discount'];
+        }
+        $finalTotal = $total - $discount;
+        
         include 'app/views/product/checkout.php';
     }
 
     public function processCheckout()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $name = $_POST['name'] ?? '';
-            $phone = $_POST['phone'] ?? '';
-            $address = $_POST['address'] ?? '';
-
-            // Validate input
+            $name = trim($_POST['name'] ?? '');
+            $phone = trim($_POST['phone'] ?? '');
+            $address = trim($_POST['address'] ?? '');
+            
             $errors = [];
+            
+            // Validation
             if (empty($name)) {
                 $errors[] = 'Tên khách hàng không được để trống';
             }
@@ -269,36 +277,56 @@ class ProductController
                 foreach ($cart as $item) {
                     $total += $item['price'] * $item['quantity'];
                 }
+                
+                // Apply voucher discount
+                $discount = 0;
+                if (isset($_SESSION['applied_voucher'])) {
+                    $discount = $_SESSION['applied_voucher']['discount'];
+                }
+                $finalTotal = $total - $discount;
+                
                 include 'app/views/product/checkout.php';
                 return;
             }
 
-            // Calculate total amount BEFORE saving
+            // Calculate total amount INCLUDING voucher discount
             $total_amount = 0;
             foreach ($_SESSION['cart'] as $item) {
                 $total_amount += $item['price'] * $item['quantity'];
             }
+            
+            // Apply voucher discount to total
+            $voucher_discount = 0;
+            $voucher_id = null;
+            $voucher_code = null;
+            if (isset($_SESSION['applied_voucher'])) {
+                $voucher_discount = $_SESSION['applied_voucher']['discount'];
+                $voucher_id = $_SESSION['applied_voucher']['id'];
+                $voucher_code = $_SESSION['applied_voucher']['code'];
+                $total_amount -= $voucher_discount;
+            }
 
             // Begin transaction
             $this->db->beginTransaction();
+            
             try {
-                // Save order information to orders table WITH total_amount and status as 'paid'
-                $query = "INSERT INTO orders (name, phone, address, total_amount, order_status) 
-                         VALUES (:name, :phone, :address, :total_amount, :order_status)";
+                // Insert order with voucher information
+                $query = "INSERT INTO orders (name, phone, address, total_amount, voucher_id, voucher_code, voucher_discount, order_status, created_at) 
+                          VALUES (:name, :phone, :address, :total_amount, :voucher_id, :voucher_code, :voucher_discount, 'paid', NOW())";
                 $stmt = $this->db->prepare($query);
-                $order_status = 'paid'; // Set status as paid when checkout is completed
-                
                 $stmt->bindParam(':name', $name);
                 $stmt->bindParam(':phone', $phone);
                 $stmt->bindParam(':address', $address);
                 $stmt->bindParam(':total_amount', $total_amount);
-                $stmt->bindParam(':order_status', $order_status);
+                $stmt->bindParam(':voucher_id', $voucher_id);
+                $stmt->bindParam(':voucher_code', $voucher_code);
+                $stmt->bindParam(':voucher_discount', $voucher_discount);
                 $stmt->execute();
+                
                 $order_id = $this->db->lastInsertId();
 
-                // Save order details to order_details table
-                $cart = $_SESSION['cart'];
-                foreach ($cart as $product_id => $item) {
+                // Insert order details (sử dụng đúng tên bảng order_details)
+                foreach ($_SESSION['cart'] as $product_id => $item) {
                     $query = "INSERT INTO order_details (order_id, product_id, quantity, price) 
                              VALUES (:order_id, :product_id, :quantity, :price)";
                     $stmt = $this->db->prepare($query);
@@ -309,8 +337,16 @@ class ProductController
                     $stmt->execute();
                 }
 
-                // Clear cart after successful order
+                // Update voucher usage count if voucher was used
+                if ($voucher_id) {
+                    require_once('app/models/VoucherModel.php');
+                    $voucherModel = new VoucherModel($this->db);
+                    $voucherModel->incrementUsage($voucher_id);
+                }
+
+                // Clear cart and voucher after successful order
                 unset($_SESSION['cart']);
+                unset($_SESSION['applied_voucher']);
 
                 // Commit transaction
                 $this->db->commit();
@@ -330,20 +366,30 @@ class ProductController
     {
         $order_id = $_SESSION['last_order_id'] ?? null;
         if ($order_id) {
-            // Get order details với total_amount
-            $query = "SELECT o.*, od.product_id, od.quantity, od.price, p.name as product_name
-                     FROM orders o 
-                     LEFT JOIN order_details od ON o.id = od.order_id
-                     LEFT JOIN product p ON od.product_id = p.id
-                     WHERE o.id = :order_id";
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':order_id', $order_id);
-            $stmt->execute();
-            $orderDetails = $stmt->fetchAll(PDO::FETCH_OBJ);
-            
-            unset($_SESSION['last_order_id']); // Clear after use
+            try {
+                // Get order details - sửa từ products thành product
+                $query = "SELECT o.*, od.product_id, od.quantity, od.price, p.name AS product_name
+                          FROM orders o
+                          LEFT JOIN order_details od ON o.id = od.order_id
+                          LEFT JOIN product p ON od.product_id = p.id
+                          WHERE o.id = :order_id";
+                $stmt = $this->db->prepare($query);
+                $stmt->bindParam(':order_id', $order_id);
+                $stmt->execute();
+                $orderDetails = $stmt->fetchAll(PDO::FETCH_OBJ);
+                
+                if (empty($orderDetails)) {
+                    echo "Không tìm thấy đơn hàng.";
+                    return;
+                }
+                
+                include 'app/views/product/orderConfirmation.php';
+            } catch (Exception $e) {
+                echo "Lỗi khi tải thông tin đơn hàng: " . $e->getMessage();
+            }
+        } else {
+            header('Location: /webbanhang/Product');
         }
-        include 'app/views/product/orderConfirmation.php';
     }
 
     public function orders()
@@ -363,7 +409,7 @@ class ProductController
 
     public function orderDetail($id)
     {
-        // Get specific order details
+        // Get specific order details - sửa từ products thành product
         $query = "SELECT o.*, od.product_id, od.quantity, od.price, p.name as product_name
                  FROM orders o 
                  LEFT JOIN order_details od ON o.id = od.order_id

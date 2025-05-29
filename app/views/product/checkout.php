@@ -74,6 +74,25 @@
                     <?php endforeach; ?>
                     
                     <hr>
+                    
+                    <!-- Voucher Section -->
+                    <?php if (isset($_SESSION['applied_voucher'])): ?>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span><?php echo number_format($total, 0, ',', '.'); ?> đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>
+                                <i class="bi bi-ticket-perforated me-1"></i>
+                                Voucher (<?php echo $_SESSION['applied_voucher']['code']; ?>):
+                            </span>
+                            <span>-<?php echo number_format($discount, 0, ',', '.'); ?> đ</span>
+                        </div>
+                        <hr>
+                    </div>
+                    <?php endif; ?>
+                    
                     <div class="d-flex justify-content-between mb-2">
                         <span>Tổng sản phẩm:</span>
                         <span><?php echo count($cart); ?></span>
@@ -85,7 +104,7 @@
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span class="fw-bold fs-5">Tổng cộng:</span>
-                        <span class="fw-bold fs-5 text-success"><?php echo number_format($total, 0, ',', '.'); ?> đ</span>
+                        <span class="fw-bold fs-5 text-success"><?php echo number_format($finalTotal, 0, ',', '.'); ?> đ</span>
                     </div>
                 <?php endif; ?>
             </div>

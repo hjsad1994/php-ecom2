@@ -1,4 +1,3 @@
-
 <?php include 'app/views/shares/header.php'; ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -349,15 +348,30 @@ $(document).ready(function() {
         pageLength: 25
     });
     
+    // Custom filter function
+    $.fn.dataTable.ext.search.push(
+        function(settings, data, dataIndex) {
+            // Get the selected filter value
+            var selectedStatus = $('input[name="statusFilter"]:checked').val();
+            
+            // If "all" is selected, show all rows
+            if (selectedStatus === 'all') {
+                return true;
+            }
+            
+            // Get the status from the data-status attribute of the row
+            var row = $(table.row(dataIndex).node());
+            var rowStatus = row.attr('data-status');
+            
+            // Return true if the row status matches the selected filter
+            return rowStatus === selectedStatus;
+        }
+    );
+    
     // Status filter functionality
     $('input[name="statusFilter"]').change(function() {
-        var selectedStatus = $(this).val();
-        
-        if (selectedStatus === 'all') {
-            table.column(6).search('').draw();
-        } else {
-            table.column(6).search(selectedStatus).draw();
-        }
+        // Redraw the table with the new filter
+        table.draw();
     });
     
     // Auto-refresh every 30 seconds

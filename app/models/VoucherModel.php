@@ -1,5 +1,7 @@
 <?php
-// filepath: app/models/VoucherModel.php
+// Set timezone to Vietnam
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
 class VoucherModel
 {
     private $conn;
@@ -29,7 +31,8 @@ class VoucherModel
     
     public function getVoucherByCode($code)
     {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE code = :code AND is_active = 1";
+        // Remove the is_active filter here to get voucher regardless of status
+        $query = "SELECT * FROM " . $this->table_name . " WHERE code = :code";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':code', $code);
         $stmt->execute();
@@ -137,18 +140,28 @@ class VoucherModel
         $voucher = $this->getVoucherByCode($code);
         
         if (!$voucher) {
-            return ['valid' => false, 'message' => 'Mã voucher không tồn tại hoặc đã hết hạn'];
+            return ['valid' => false, 'message' => 'Mã voucher không tồn tại'];
         }
         
-        // Check if voucher is active
+        // Check if voucher is active FIRST
         if (!$voucher->is_active) {
             return ['valid' => false, 'message' => 'Mã voucher đã bị vô hiệu hóa'];
         }
         
-        // Check date range
-        $now = date('Y-m-d H:i:s');
-        if ($now < $voucher->start_date || $now > $voucher->end_date) {
-            return ['valid' => false, 'message' => 'Mã voucher đã hết hạn sử dụng'];
+        // Check date range - sử dụng timestamp để so sánh chính xác
+        $now = time();
+        $startTime = strtotime($voucher->start_date);
+        $endTime = strtotime($voucher->end_date);
+        
+        // Debug - bạn có thể bỏ comment để kiểm tra
+        // error_log("Current: " . date('Y-m-d H:i:s', $now) . " Start: " . date('Y-m-d H:i:s', $startTime) . " End: " . date('Y-m-d H:i:s', $endTime));
+        
+        if ($now < $startTime) {
+            return ['valid' => false, 'message' => 'Mã voucher chưa có hiệu lực. Bắt đầu từ: ' . date('d/m/Y H:i', $startTime)];
+        }
+        
+        if ($now > $endTime) {
+            return ['valid' => false, 'message' => 'Mã voucher đã hết hạn vào: ' . date('d/m/Y H:i', $endTime)];
         }
         
         // Check usage limit
@@ -158,7 +171,7 @@ class VoucherModel
         
         // Check minimum order amount
         if ($cartTotal < $voucher->min_order_amount) {
-            return ['valid' => false, 'message' => 'Đơn hàng chưa đạt giá trị tối thiểu để sử dụng voucher'];
+            return ['valid' => false, 'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($voucher->min_order_amount, 0, ',', '.') . ' đ để sử dụng voucher'];
         }
         
         // Check product applicability

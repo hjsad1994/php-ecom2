@@ -72,6 +72,7 @@ class VoucherController
     public function edit($id)
     {
         $voucher = $this->voucherModel->getVoucherById($id);
+        // Sử dụng getProducts() thay vì truy vấn trực tiếp để tránh lỗi tên bảng
         $products = $this->productModel->getProducts();
         if ($voucher) {
             include 'app/views/voucher/edit.php';
