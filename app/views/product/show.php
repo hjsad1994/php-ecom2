@@ -77,9 +77,14 @@
                     </div>
                     
                     <div class="mt-4 pt-3 border-top">
-                        <a href="/webbanhang/Product" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-2"></i> Quay lại danh sách
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="/webbanhang/Product/addToCart/<?php echo $product->id; ?>" class="btn btn-success">
+                                <i class="bi bi-cart-plus me-2"></i>Thêm vào giỏ hàng
+                            </a>
+                            <a href="/webbanhang/Product" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i> Quay lại danh sách
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

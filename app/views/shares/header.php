@@ -133,6 +133,26 @@
                             <i class="bi bi-tag me-1"></i> Danh mục
                         </a>
                     </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Product/orders') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/Product/orders">
+                            <i class="bi bi-list-check me-1"></i> Đơn hàng
+                        </a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Voucher') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/Voucher">
+                            <i class="bi bi-ticket-perforated me-1"></i> Voucher
+                        </a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link px-3 py-2 position-relative" href="/webbanhang/Product/cart">
+                            <i class="bi bi-cart me-1"></i> Giỏ hàng
+                            <?php if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    <?php echo array_sum(array_column($_SESSION['cart'], 'quantity')); ?>
+                                </span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

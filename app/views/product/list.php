@@ -88,14 +88,19 @@
                     </div>
                     
                     <div class="card-footer bg-white border-top-0 pt-0">
-                        <div class="d-flex justify-content-between">
-                            <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-outline-secondary">
-                                <i class="bi bi-pencil"></i> Sửa
-                            </a>
-                            <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
-                               onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
-                               class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i> Xóa
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group" role="group">
+                                <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </a>
+                            </div>
+                            <a href="/webbanhang/Product/addToCart/<?php echo $product->id; ?>" class="btn btn-sm btn-success">
+                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ
                             </a>
                         </div>
                     </div>
