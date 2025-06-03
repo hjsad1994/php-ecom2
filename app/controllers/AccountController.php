@@ -1,0 +1,132 @@
+<?php
+require_once('app/config/database.php');
+require_once('app/models/AccountModel.php');
+
+class AccountController {
+    private $accountModel;
+    private $db;
+    
+    public function __construct() {
+        $this->db = (new Database())->getConnection();
+        $this->accountModel = new AccountModel($this->db);
+    }
+    
+    function register(){
+        include_once 'app/views/account/register.php';
+    }
+    
+    public function login() {
+        include_once 'app/views/account/login.php';
+    }
+    
+    function save(){
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = $_POST['username'] ?? '';
+            $fullName = $_POST['fullname'] ?? '';
+            $password = $_POST['password'] ?? '';
+            $confirmPassword = $_POST['confirmpassword'] ?? '';
+            $errors = [];
+            
+            // Debug: Log received data
+            error_log("AccountController save - received data: username=$username, fullName=$fullName");
+            
+            if(empty($username)){
+                $errors['username'] = "Vui lòng nhập username!";
+            }
+            if(empty($fullName)){
+                $errors['fullname'] = "Vui lòng nhập fullName!";
+            }
+            if(empty($password)){
+                $errors['password'] = "Vui lòng nhập password!";
+            }
+            if($password != $confirmPassword){
+                $errors['confirmPass'] = "Mật khẩu và xác nhận chưa đúng";
+            }
+            
+            // Kiểm tra username đã được đăng ký chưa?
+            try {
+                $account = $this->accountModel->getAccountByUsername($username);
+                if($account){
+                    $errors['account'] = "Tài khoản này đã có người đăng ký!";
+                }
+            } catch (Exception $e) {
+                error_log("AccountController save - getAccountByUsername error: " . $e->getMessage());
+                $errors['database'] = "Lỗi kết nối database!";
+            }
+            
+            if(count($errors) > 0){
+                error_log("AccountController save - validation errors: " . print_r($errors, true));
+                include_once 'app/views/account/register.php';
+            } else {
+                try {
+                    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+                    error_log("AccountController save - attempting to save user: $username");
+                    $result = $this->accountModel->save($username, $fullName, $password);
+                    if($result){
+                        error_log("AccountController save - success, redirecting to login");
+                        header('Location: /webbanhang/account/login');
+                        exit;
+                    } else {
+                        error_log("AccountController save - save failed");
+                        $errors['save'] = "Lỗi khi lưu tài khoản!";
+                        include_once 'app/views/account/register.php';
+                    }
+                } catch (Exception $e) {
+                    error_log("AccountController save - exception: " . $e->getMessage());
+                    $errors['exception'] = "Lỗi hệ thống: " . $e->getMessage();
+                    include_once 'app/views/account/register.php';
+                }
+            }
+        }
+    }
+    
+    function logout(){
+        session_start();
+        unset($_SESSION['username']);
+        unset($_SESSION['user_role']);
+        header('Location: /webbanhang/product');
+        exit;
+    }
+    
+    public function checkLogin(){
+        // Kiểm tra xem liệu form đã được submit
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = $_POST['username'] ?? '';
+            $password = $_POST['password'] ?? '';
+            $errors = [];
+            
+            if(empty($username)){
+                $errors['username'] = "Vui lòng nhập username!";
+            }
+            if(empty($password)){
+                $errors['password'] = "Vui lòng nhập password!";
+            }
+            
+            if(count($errors) > 0){
+                include_once 'app/views/account/login.php';
+                return;
+            }
+            
+            $account = $this->accountModel->getAccountByUsername($username);
+            if ($account) {
+                $pwd_hashed = $account->password;
+                // Check mật khẩu
+                if (password_verify($password, $pwd_hashed)) {
+                    session_start();
+                    $_SESSION['username'] = $account->username;
+                    $_SESSION['user_role'] = $account->role ?? 'user';
+                    header('Location: /webbanhang/product');
+                    exit;
+                } else {
+                    $errors['login'] = "Mật khẩu không đúng.";
+                }
+            } else {
+                $errors['login'] = "Không tìm thấy tài khoản";
+            }
+            
+            if(count($errors) > 0){
+                include_once 'app/views/account/login.php';
+            }
+        }
+    }
+} 

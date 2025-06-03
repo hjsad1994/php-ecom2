@@ -1,3 +1,6 @@
+<?php
+require_once 'app/helpers/SessionHelper.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,6 +107,22 @@
         .container {
             max-width: 1200px;
         }
+        .user-greeting {
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+        }
+        .admin-badge {
+            background-color: #ffc107;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .product-image {
+            max-width: 100px;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +172,37 @@
                             <?php endif; ?>
                         </a>
                     </li>
+                    
+                    <!-- Authentication Links -->
+                    <?php if (SessionHelper::isLoggedIn()): ?>
+                        <!-- User is logged in -->
+                        <li class="nav-item mx-1 d-flex align-items-center">
+                            <span class="user-greeting me-3">
+                                <i class="bi bi-person-circle me-1"></i>
+                                Xin chào, <strong><?= htmlspecialchars(SessionHelper::getUsername()) ?></strong>
+                                <?php if (SessionHelper::isAdmin()): ?>
+                                    <span class="admin-badge ms-1">ADMIN</span>
+                                <?php endif; ?>
+                            </span>
+                        </li>
+                        <li class="nav-item mx-1">
+                            <a class="nav-link px-3 py-2" href="/webbanhang/account/logout">
+                                <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <!-- User is not logged in -->
+                        <li class="nav-item mx-1">
+                            <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/account/login') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/account/login">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                            </a>
+                        </li>
+                        <li class="nav-item mx-1">
+                            <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/account/register') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/account/register">
+                                <i class="bi bi-person-plus me-1"></i> Đăng ký
+                            </a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
