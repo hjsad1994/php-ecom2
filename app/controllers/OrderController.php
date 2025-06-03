@@ -254,7 +254,7 @@ class OrderController {
         
         // If cart is empty, redirect to cart page
         if (empty($cartItems)) {
-            header('Location: /webbanhang/cart');
+            header('Location: /webbanhang/user/cart');
             exit;
         }
         

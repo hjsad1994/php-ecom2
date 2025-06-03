@@ -337,7 +337,7 @@ function updateQuantity(productId, newQuantity) {
         return;
     }
     
-    fetch('/webbanhang/cart/update', {
+    fetch('/webbanhang/user/cart/update', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -364,7 +364,7 @@ function removeFromCart(productId) {
         return;
     }
     
-    fetch('/webbanhang/cart/remove', {
+    fetch('/webbanhang/user/cart/remove', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -397,7 +397,7 @@ function clearCart() {
         return;
     }
     
-    fetch('/webbanhang/cart/clear', {
+    fetch('/webbanhang/user/cart/clear', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -426,7 +426,7 @@ function applyVoucher() {
         return;
     }
     
-    fetch('/webbanhang/cart/apply-voucher', {
+    fetch('/webbanhang/user/cart/apply-voucher', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -454,7 +454,7 @@ function removeVoucher() {
         return;
     }
     
-    fetch('/webbanhang/cart/remove-voucher', {
+    fetch('/webbanhang/user/cart/remove-voucher', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

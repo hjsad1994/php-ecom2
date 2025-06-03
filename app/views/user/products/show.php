@@ -544,7 +544,7 @@ function buyNow() {
     const formData = new FormData(document.getElementById('addToCartForm'));
     formData.append('product_id', <?php echo $product->id; ?>);
     
-    fetch('/webbanhang/cart/add', {
+    fetch('/webbanhang/user/cart/add', {
         method: 'POST',
         body: formData
     })
@@ -577,7 +577,7 @@ document.getElementById('addToCartForm').addEventListener('submit', function(e) 
     const formData = new FormData(this);
     formData.append('product_id', <?php echo $product->id; ?>);
     
-    fetch('/webbanhang/cart/add', {
+    fetch('/webbanhang/user/cart/add', {
         method: 'POST',
         body: formData
     })
@@ -586,7 +586,7 @@ document.getElementById('addToCartForm').addEventListener('submit', function(e) 
         if (data.success) {
             alert(data.message);
             // Redirect to cart
-            window.location.href = '/webbanhang/cart';
+            window.location.href = '/webbanhang/user/cart';
         } else {
             alert(data.message || 'Có lỗi xảy ra');
         }

@@ -13,8 +13,8 @@
         </nav>
     </div>
     <div class="col-md-4 text-end">
-        <a href="/webbanhang/order/create" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-2"></i>Đặt hàng mới
+        <a href="/webbanhang/user/orders/create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Tạo đơn hàng mới
         </a>
         <a href="/webbanhang/user/profile" class="btn btn-outline-secondary">
             <i class="bi bi-person me-2"></i>Hồ sơ
@@ -394,7 +394,7 @@ function reorder(orderId) {
         .then(data => {
             if (data.success) {
                 alert('Đã thêm sản phẩm vào giỏ hàng');
-                window.location.href = '/webbanhang/cart';
+                window.location.href = '/webbanhang/user/cart';
             } else {
                 alert(data.message || 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng');
             }

@@ -11,11 +11,17 @@ $url = rtrim($url, '/');
 $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = explode('/', $url);
 
-// Determine controller name - default to ProductController if empty
-$controllerName = isset($url[0]) && $url[0] != '' ? ucfirst($url[0]) . 'Controller' : 'ProductController';
-
-// Determine action - default to index if empty
-$action = isset($url[1]) && $url[1] != '' ? $url[1] : 'index';
+// Handle empty URL (homepage)
+if (empty($url[0])) {
+    $controllerName = 'HomeController';
+    $action = 'index';
+} else {
+    // Determine controller name - default to ProductController if empty
+    $controllerName = isset($url[0]) && $url[0] != '' ? ucfirst($url[0]) . 'Controller' : 'ProductController';
+    
+    // Determine action - default to index if empty
+    $action = isset($url[1]) && $url[1] != '' ? $url[1] : 'index';
+}
 
 // Special routing for admin panel
 if (isset($url[0]) && $url[0] === 'admin') {
@@ -166,7 +172,7 @@ if (isset($url[0]) && $url[0] === 'user') {
         case 'orders':
             $controllerName = 'OrderController';
             if (isset($url[2]) && $url[2] != '') {
-                // Handle user order sub-actions: view, payment, invoice
+                // Handle user order sub-actions: view, payment, invoice, create
                 if ($url[2] === 'view' && isset($url[3])) {
                     $action = 'view';
                     $url[2] = $url[3]; // Pass order ID as parameter
@@ -176,6 +182,8 @@ if (isset($url[0]) && $url[0] === 'user') {
                 } elseif ($url[2] === 'invoice' && isset($url[3])) {
                     $action = 'invoice';
                     $url[2] = $url[3]; // Pass order ID as parameter
+                } elseif ($url[2] === 'create') {
+                    $action = 'create';
                 } else {
                     $action = $url[2];
                 }
@@ -186,10 +194,21 @@ if (isset($url[0]) && $url[0] === 'user') {
         case 'cart':
             $controllerName = 'CartController';
             $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'index';
+            
+            // Handle hyphenated actions
+            if ($action === 'apply-voucher') {
+                $action = 'applyVoucher';
+            } elseif ($action === 'remove-voucher') {
+                $action = 'removeVoucher';
+            }
             break;
         case 'profile':
             $controllerName = 'AccountController';
-            $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'profile';
+            if (isset($url[2]) && $url[2] === 'update') {
+                $action = 'updateProfile';
+            } else {
+                $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'profile';
+            }
             break;
         default:
             $controllerName = 'ProductController';

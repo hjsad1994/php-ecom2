@@ -257,7 +257,7 @@ function reorderDetail(orderId) {
         .then(data => {
             if (data.success) {
                 alert('Đã thêm sản phẩm vào giỏ hàng');
-                window.location.href = '/webbanhang/cart';
+                window.location.href = '/webbanhang/user/cart';
             } else {
                 alert(data.message || 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng');
             }

@@ -202,5 +202,40 @@ class ProductModel
     {
         return $this->getProductById($id);
     }
+    
+    /**
+     * Lấy sản phẩm nổi bật cho trang chủ
+     */
+    public function getFeaturedProducts($limit = 8)
+    {
+        $query = "SELECT p.id, p.name, p.description, p.price, p.image, c.name as category_name, p.category_id
+                  FROM " . $this->table_name . " p
+                  LEFT JOIN category c ON p.category_id = c.id
+                  ORDER BY p.id DESC
+                  LIMIT :limit";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    
+    /**
+     * Lấy categories của một product
+     */
+    public function getProductCategories($productIds)
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+        
+        $placeholders = str_repeat('?,', count($productIds) - 1) . '?';
+        $query = "SELECT DISTINCT p.category_id 
+                  FROM " . $this->table_name . " p 
+                  WHERE p.id IN ($placeholders) AND p.category_id IS NOT NULL";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($productIds);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 }
 ?>

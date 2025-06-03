@@ -183,7 +183,7 @@ class VoucherController
     public function removeVoucher()
     {
         unset($_SESSION['applied_voucher']);
-        header('Location: /webbanhang/product/cart');
+        header('Location: /webbanhang/user/cart');
         exit;
     }
 }

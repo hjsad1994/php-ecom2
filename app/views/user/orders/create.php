@@ -8,14 +8,14 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/webbanhang/" class="text-decoration-none">Trang chủ</a></li>
-                <li class="breadcrumb-item"><a href="/webbanhang/order" class="text-decoration-none">Đơn hàng</a></li>
-                <li class="breadcrumb-item active">Đặt hàng mới</li>
+                <li class="breadcrumb-item"><a href="/webbanhang/user/orders" class="text-decoration-none">Đơn hàng</a></li>
+                <li class="breadcrumb-item active">Tạo đơn hàng</li>
             </ol>
         </nav>
     </div>
     <div class="col-md-4 text-end">
-        <a href="/webbanhang/order" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Quay lại đơn hàng
+        <a href="/webbanhang/user/orders" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại
         </a>
     </div>
 </div>

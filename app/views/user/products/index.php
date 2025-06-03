@@ -17,7 +17,7 @@
                 </button>
             </div>
             <!-- Cart Link -->
-            <a href="/webbanhang/cart" class="btn btn-primary position-relative">
+            <a href="/webbanhang/user/cart" class="btn btn-primary position-relative">
                 <i class="bi bi-cart3 me-1"></i>
                 Giỏ hàng
                 <?php if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
@@ -367,7 +367,7 @@ function addToCart(productId) {
     formData.append('product_id', productId);
     formData.append('quantity', 1);
     
-    fetch('/webbanhang/cart/add', {
+    fetch('/webbanhang/user/cart/add', {
         method: 'POST',
         body: formData
     })
@@ -376,7 +376,7 @@ function addToCart(productId) {
         if (data.success) {
             alert(data.message);
             // Optionally redirect to cart
-            window.location.href = '/webbanhang/cart';
+            window.location.href = '/webbanhang/user/cart';
         } else {
             alert(data.message || 'Có lỗi xảy ra');
         }

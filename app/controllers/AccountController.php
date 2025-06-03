@@ -139,4 +139,94 @@ class AccountController {
             }
         }
     }
+
+    public function profile() {
+        // Require user to be logged in
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /webbanhang/account/login');
+            exit;
+        }
+        
+        // Get user information
+        $userId = $_SESSION['user_id'];
+        try {
+            $query = "SELECT * FROM account WHERE id = :id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':id', $userId);
+            $stmt->execute();
+            $user = $stmt->fetch(PDO::FETCH_OBJ);
+            
+            if (!$user) {
+                header('Location: /webbanhang/account/login');
+                exit;
+            }
+            
+            // Get user's order statistics
+            $orderQuery = "SELECT COUNT(*) as total_orders, 
+                                 SUM(CASE WHEN order_status = 'completed' THEN 1 ELSE 0 END) as completed_orders,
+                                 SUM(CASE WHEN order_status = 'pending' THEN 1 ELSE 0 END) as pending_orders
+                          FROM orders WHERE user_id = :user_id";
+            $orderStmt = $this->db->prepare($orderQuery);
+            $orderStmt->bindParam(':user_id', $userId);
+            $orderStmt->execute();
+            $orderStats = $orderStmt->fetch(PDO::FETCH_OBJ);
+            
+            include_once 'app/views/user/profile/index.php';
+            
+        } catch (Exception $e) {
+            error_log("Profile error: " . $e->getMessage());
+            http_response_code(500);
+            die('Lỗi hệ thống');
+        }
+    }
+
+    public function updateProfile() {
+        // Require user to be logged in
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /webbanhang/account/login');
+            exit;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $userId = $_SESSION['user_id'];
+            $fullName = $_POST['fullname'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $phone = $_POST['phone'] ?? '';
+            $address = $_POST['address'] ?? '';
+            $errors = [];
+            
+            // Validation
+            if (empty($fullName)) {
+                $errors['fullname'] = "Vui lòng nhập họ tên!";
+            }
+            
+            if (count($errors) == 0) {
+                try {
+                    $query = "UPDATE account SET fullname = :fullname, email = :email, phone = :phone, address = :address WHERE id = :id";
+                    $stmt = $this->db->prepare($query);
+                    $stmt->bindParam(':fullname', $fullName);
+                    $stmt->bindParam(':email', $email);
+                    $stmt->bindParam(':phone', $phone);
+                    $stmt->bindParam(':address', $address);
+                    $stmt->bindParam(':id', $userId);
+                    
+                    if ($stmt->execute()) {
+                        $_SESSION['success'] = "Cập nhật thông tin thành công!";
+                        header('Location: /webbanhang/user/profile');
+                        exit;
+                    } else {
+                        $errors['update'] = "Lỗi khi cập nhật thông tin!";
+                    }
+                } catch (Exception $e) {
+                    error_log("Update profile error: " . $e->getMessage());
+                    $errors['exception'] = "Lỗi hệ thống!";
+                }
+            }
+            
+            // If there are errors, redirect back with errors
+            $_SESSION['errors'] = $errors;
+            header('Location: /webbanhang/user/profile');
+            exit;
+        }
+    }
 } 

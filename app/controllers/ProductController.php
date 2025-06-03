@@ -46,7 +46,16 @@ class ProductController
     // PUBLIC - Xem chi tiết sản phẩm (cho mọi người)
     public function show($id)
     {
-        $product = $this->productModel->getProductById($id);
+        // Get product with category information
+        $query = "SELECT p.*, c.name as category_name 
+                  FROM product p 
+                  LEFT JOIN category c ON p.category_id = c.id 
+                  WHERE p.id = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $product = $stmt->fetch(PDO::FETCH_OBJ);
+        
         if ($product) {
             include 'app/views/product/show.php';
         } else {
@@ -221,7 +230,7 @@ class ProductController
         if (isset($_GET['buy_now']) && $_GET['buy_now'] == '1') {
             header('Location: /webbanhang/checkout');
         } else {
-            header('Location: /webbanhang/cart');
+            header('Location: /webbanhang/user/cart');
         }
         exit;
     }
@@ -232,7 +241,7 @@ class ProductController
         if (isset($_SESSION['cart'][$id])) {
             unset($_SESSION['cart'][$id]);
         }
-        header('Location: /webbanhang/cart');
+        header('Location: /webbanhang/user/cart');
         exit;
     }
 
@@ -250,7 +259,7 @@ class ProductController
                 }
             }
         }
-        header('Location: /webbanhang/cart');
+        header('Location: /webbanhang/user/cart');
     }
 
     private function debugUpload($file, $target_path)
