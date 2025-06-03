@@ -101,8 +101,11 @@ class AuthHelper
         
         if (self::isUser()) {
             // User chỉ xem được đơn hàng của mình
+            require_once 'app/config/database.php';
             require_once 'app/models/OrderModel.php';
-            $orderModel = new OrderModel();
+            
+            $db = (new Database())->getConnection();
+            $orderModel = new OrderModel($db);
             $order = $orderModel->getById($orderId);
             
             return $order && $order['user_id'] == self::getUserId();

@@ -3,8 +3,8 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Danh sách danh mục</h1>
     <?php if (AuthHelper::isAdmin()): ?>
-        <a href="/webbanhang/Category/add" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> Thêm danh mục mới
+        <a href="/webbanhang/admin/categories/create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i>Thêm danh mục mới
         </a>
     <?php endif; ?>
 </div>

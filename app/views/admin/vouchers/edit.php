@@ -100,11 +100,15 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="discount_type" class="form-label">
-                                        <i class="bi bi-percent me-1"></i>Loại giảm giá
+                                        <i class="bi bi-percent me-1"></i>Loại giảm giá <span class="text-danger">*</span>
                                     </label>
                                     <select class="form-select" id="discount_type" name="discount_type">
-                                        <option value="percentage" <?php echo ($voucher['discount_type'] ?? '') === 'percentage' ? 'selected' : ''; ?>>Phần trăm (%)</option>
-                                        <option value="fixed" <?php echo ($voucher['discount_type'] ?? '') === 'fixed' ? 'selected' : ''; ?>>Số tiền cố định (VNĐ)</option>
+                                        <option value="percentage" <?php echo ($voucher['discount_type'] == 'percentage') ? 'selected' : ''; ?>>
+                                            Phần trăm (%)
+                                        </option>
+                                        <option value="fixed" <?php echo ($voucher['discount_type'] == 'fixed') ? 'selected' : ''; ?>>
+                                            Số tiền cố định (VNĐ)
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -149,19 +153,118 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
+                                    <label for="applies_to" class="form-label">
+                                        <i class="bi bi-target me-1"></i>Áp dụng cho
+                                    </label>
+                                    <select class="form-select" id="applies_to" name="applies_to" onchange="toggleSpecificSelection()">
+                                        <option value="all_products" <?php echo ($voucher['applies_to'] == 'all_products') ? 'selected' : ''; ?>>
+                                            Tất cả sản phẩm
+                                        </option>
+                                        <option value="specific_products" <?php echo ($voucher['applies_to'] == 'specific_products') ? 'selected' : ''; ?>>
+                                            Sản phẩm cụ thể
+                                        </option>
+                                        <option value="specific_categories" <?php echo ($voucher['applies_to'] == 'specific_categories') ? 'selected' : ''; ?>>
+                                            Danh mục cụ thể
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
                                     <label for="min_order_amount" class="form-label">
-                                        <i class="bi bi-cart me-1"></i>Giá trị đơn hàng tối thiểu (VNĐ)
+                                        <i class="bi bi-currency-dollar me-1"></i>Giá trị đơn hàng tối thiểu (VNĐ)
                                     </label>
                                     <input type="number" 
                                            class="form-control" 
                                            id="min_order_amount" 
                                            name="min_order_amount" 
-                                           value="<?php echo $voucher['min_order_amount'] ?? 0; ?>" 
+                                           value="<?php echo $voucher['min_order_amount'] ?? '0'; ?>" 
                                            min="0" 
                                            placeholder="0">
                                 </div>
                             </div>
-                            
+                        </div>
+                        
+                        <!-- Specific Products Selection -->
+                        <div id="specific_products_section" class="mb-3" style="display: none;">
+                            <label class="form-label">
+                                <i class="bi bi-box me-1"></i>Chọn sản phẩm cụ thể
+                            </label>
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                <?php
+                                // Load products for selection
+                                require_once 'app/models/ProductModel.php';
+                                $productModel = new ProductModel((new Database())->getConnection());
+                                $products = $productModel->getProducts();
+                                
+                                // Get selected product IDs
+                                $selectedProducts = [];
+                                if (!empty($voucher['product_ids'])) {
+                                    $selectedProducts = json_decode($voucher['product_ids'], true) ?: [];
+                                }
+                                
+                                if (!empty($products)):
+                                    foreach ($products as $product):
+                                        $isSelected = in_array($product->id, $selectedProducts);
+                                ?>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="product_ids[]" value="<?php echo $product->id; ?>" id="product_<?php echo $product->id; ?>" <?php echo $isSelected ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="product_<?php echo $product->id; ?>">
+                                            <?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>
+                                            <small class="text-muted">(<?php echo number_format($product->price, 0, ',', '.'); ?> đ)</small>
+                                        </label>
+                                    </div>
+                                <?php 
+                                    endforeach;
+                                else:
+                                ?>
+                                    <p class="text-muted">Chưa có sản phẩm nào.</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <!-- Specific Categories Selection -->
+                        <div id="specific_categories_section" class="mb-3" style="display: none;">
+                            <label class="form-label">
+                                <i class="bi bi-tags me-1"></i>Chọn danh mục cụ thể
+                            </label>
+                            <div class="border rounded p-3">
+                                <?php
+                                // Load categories for selection
+                                require_once 'app/models/CategoryModel.php';
+                                $categoryModel = new CategoryModel((new Database())->getConnection());
+                                $categories = $categoryModel->getCategories();
+                                
+                                // Get selected category IDs
+                                $selectedCategories = [];
+                                if (!empty($voucher['category_ids'])) {
+                                    $selectedCategories = json_decode($voucher['category_ids'], true) ?: [];
+                                }
+                                
+                                if (!empty($categories)):
+                                    foreach ($categories as $category):
+                                        $isSelected = in_array($category->id, $selectedCategories);
+                                ?>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="category_ids[]" value="<?php echo $category->id; ?>" id="category_<?php echo $category->id; ?>" <?php echo $isSelected ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="category_<?php echo $category->id; ?>">
+                                            <?php echo htmlspecialchars($category->name, ENT_QUOTES, 'UTF-8'); ?>
+                                            <?php if (!empty($category->description)): ?>
+                                                <small class="text-muted">- <?php echo htmlspecialchars($category->description, ENT_QUOTES, 'UTF-8'); ?></small>
+                                            <?php endif; ?>
+                                        </label>
+                                    </div>
+                                <?php 
+                                    endforeach;
+                                else:
+                                ?>
+                                    <p class="text-muted">Chưa có danh mục nào.</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="usage_limit" class="form-label">
@@ -176,9 +279,7 @@
                                            placeholder="Không giới hạn">
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="row">
+                            
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="start_date" class="form-label">
@@ -192,7 +293,9 @@
                                            required>
                                 </div>
                             </div>
-                            
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="end_date" class="form-label">
@@ -235,5 +338,29 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleSpecificSelection() {
+    const appliesTo = document.getElementById('applies_to').value;
+    const productsSection = document.getElementById('specific_products_section');
+    const categoriesSection = document.getElementById('specific_categories_section');
+    
+    // Hide all sections first
+    productsSection.style.display = 'none';
+    categoriesSection.style.display = 'none';
+    
+    // Show relevant section
+    if (appliesTo === 'specific_products') {
+        productsSection.style.display = 'block';
+    } else if (appliesTo === 'specific_categories') {
+        categoriesSection.style.display = 'block';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleSpecificSelection();
+});
+</script>
 
 <?php include_once 'app/views/shares/footer.php'; ?> 

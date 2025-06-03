@@ -120,8 +120,8 @@ class ProductModel
         $stmt->bindParam(':id', $id);
         
         if ($stmt->execute()) {
-            if ($currentProduct && !empty($currentProduct->image) && file_exists('public/uploads/' . $currentProduct->image)) {
-                unlink('public/uploads/' . $currentProduct->image);
+            if ($currentProduct && !empty($currentProduct->image) && file_exists('public/uploads/products/' . $currentProduct->image)) {
+                unlink('public/uploads/products/' . $currentProduct->image);
             }
             return true;
         }

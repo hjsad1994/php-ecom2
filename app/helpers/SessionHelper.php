@@ -17,9 +17,14 @@ class SessionHelper {
         return $_SESSION['user_role'] ?? null;
     }
     
+    public static function getUserEmail() {
+        return $_SESSION['user_email'] ?? null;
+    }
+    
     public static function logout() {
         unset($_SESSION['username']);
         unset($_SESSION['user_role']);
+        unset($_SESSION['user_email']);
         session_destroy();
     }
 } 

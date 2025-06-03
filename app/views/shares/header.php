@@ -218,13 +218,14 @@ require_once 'app/helpers/AuthHelper.php';
                                 <i class="bi bi-grid me-1"></i>Sản phẩm
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <!-- Categories temporarily removed for simplified UX -->
+                        <!-- <li class="nav-item">
                             <a class="nav-link" href="/webbanhang/category">
                                 <i class="bi bi-tag me-1"></i>Danh mục
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
-                            <a class="nav-link position-relative" href="/webbanhang/cart">
+                            <a class="nav-link position-relative" href="/webbanhang/user/cart">
                                 <i class="bi bi-cart me-1"></i>Giỏ hàng
                                 <?php if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -234,7 +235,7 @@ require_once 'app/helpers/AuthHelper.php';
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/webbanhang/order">
+                            <a class="nav-link" href="/webbanhang/user/orders">
                                 <i class="bi bi-receipt me-1"></i>Đơn hàng
                             </a>
                         </li>
@@ -246,11 +247,12 @@ require_once 'app/helpers/AuthHelper.php';
                                 <i class="bi bi-grid me-1"></i>Sản phẩm
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <!-- Categories temporarily removed for simplified UX -->
+                        <!-- <li class="nav-item">
                             <a class="nav-link" href="/webbanhang/category">
                                 <i class="bi bi-tag me-1"></i>Danh mục
                             </a>
-                        </li>
+                        </li> -->
                     <?php endif; ?>
                     
                     <!-- Authentication Links -->

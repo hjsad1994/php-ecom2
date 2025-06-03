@@ -46,11 +46,15 @@
                             <td class="fw-bold">#<?php echo $product->id; ?></td>
                             <td class="text-center">
                                 <?php if (!empty($product->image)): ?>
-                                    <img src="/webbanhang/public/uploads/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
+                                    <img src="/webbanhang/public/uploads/products/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
                                          alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>"
-                                         class="img-thumbnail product-thumbnail">
+                                         class="img-thumbnail product-thumbnail"
+                                         loading="lazy"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                    <i class="bi bi-image text-secondary" style="font-size: 2rem; display: none;"></i>
                                 <?php else: ?>
                                     <i class="bi bi-image text-secondary" style="font-size: 2rem;"></i>
+                                    <div class="small text-muted">Chưa có ảnh</div>
                                 <?php endif; ?>
                             </td>
                             <td>
@@ -114,14 +118,53 @@
 
 <style>
 .product-thumbnail {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.product-thumbnail:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
 .btn-group .btn {
     border-radius: 4px !important;
     margin-right: 2px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Enhanced image fallback styling */
+.text-center i.bi-image {
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+}
+
+/* Badge styling improvements */
+.badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+/* Price formatting */
+.text-end {
+    font-weight: 600;
+    color: #198754;
+}
+
+/* Description text styling */
+.text-muted {
+    line-height: 1.4;
 }
 </style>
 

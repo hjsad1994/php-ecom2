@@ -23,12 +23,14 @@ class CategoryController
         include 'app/views/category/list.php';
     }
 
-    // ADMIN ONLY - Thêm danh mục
+    // ADMIN ONLY - Thêm danh mục (DEPRECATED - use AdminController)
     public function add()
     {
         AuthHelper::requireAdmin('/webbanhang/account/login');
         
-        include 'app/views/category/add.php';
+        // Redirect to proper admin interface
+        header('Location: /webbanhang/admin/categories/create');
+        exit;
     }
 
     // ADMIN ONLY - Lưu danh mục mới
@@ -42,7 +44,9 @@ class CategoryController
             $result = $this->categoryModel->addCategory($name, $description);
             if (is_array($result)) {
                 $errors = $result;
-                include 'app/views/category/add.php';
+                // Redirect to admin create with error handling
+                header('Location: /webbanhang/admin/categories/create');
+                exit;
             } else {
                 header('Location: /webbanhang/admin/categories');
                 exit;
@@ -50,17 +54,14 @@ class CategoryController
         }
     }
 
-    // ADMIN ONLY - Form sửa danh mục
+    // ADMIN ONLY - Form sửa danh mục (DEPRECATED - use AdminController)
     public function edit($id)
     {
         AuthHelper::requireAdmin('/webbanhang/account/login');
         
-        $category = $this->categoryModel->getCategoryById($id);
-        if ($category) {
-            include 'app/views/category/edit.php';
-        } else {
-            echo "Không tìm thấy danh mục.";
-        }
+        // Redirect to proper admin interface
+        header('Location: /webbanhang/admin/categories/edit/' . $id);
+        exit;
     }
 
     // ADMIN ONLY - Cập nhật danh mục

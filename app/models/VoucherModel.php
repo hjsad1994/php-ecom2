@@ -41,14 +41,23 @@ class VoucherModel
     
     public function validateVoucher($code, $cartTotal, $productIds = [])
     {
+        error_log("=== VoucherModel::validateVoucher DEBUG ===");
+        error_log("Code: " . $code);
+        error_log("Cart Total: " . $cartTotal);
+        error_log("Product IDs: " . print_r($productIds, true));
+        
         $voucher = $this->getVoucherByCode($code);
         
         if (!$voucher) {
+            error_log("Voucher not found: " . $code);
             return ['valid' => false, 'message' => 'Mã voucher không tồn tại'];
         }
         
+        error_log("Voucher found: " . print_r($voucher, true));
+        
         // Check if voucher is active FIRST
         if (!$voucher->is_active) {
+            error_log("Voucher inactive: " . $code);
             return ['valid' => false, 'message' => 'Mã voucher đã bị vô hiệu hóa'];
         }
         
@@ -57,40 +66,55 @@ class VoucherModel
         $startTime = strtotime($voucher->start_date);
         $endTime = strtotime($voucher->end_date);
         
+        error_log("Date check - Now: " . date('Y-m-d H:i:s', $now) . " Start: " . date('Y-m-d H:i:s', $startTime) . " End: " . date('Y-m-d H:i:s', $endTime));
+        
         if ($now < $startTime) {
+            error_log("Voucher not yet active");
             return ['valid' => false, 'message' => 'Mã voucher chưa có hiệu lực. Bắt đầu từ: ' . date('d/m/Y H:i', $startTime)];
         }
         
         if ($now > $endTime) {
+            error_log("Voucher expired");
             return ['valid' => false, 'message' => 'Mã voucher đã hết hạn vào: ' . date('d/m/Y H:i', $endTime)];
         }
         
         // Check usage limit
         if ($voucher->usage_limit && $voucher->used_count >= $voucher->usage_limit) {
+            error_log("Voucher usage limit exceeded");
             return ['valid' => false, 'message' => 'Mã voucher đã hết lượt sử dụng'];
         }
         
         // Check minimum order amount
         if ($cartTotal < $voucher->min_order_amount) {
+            error_log("Cart total too low: {$cartTotal} < {$voucher->min_order_amount}");
             return ['valid' => false, 'message' => 'Đơn hàng chưa đạt giá trị tối thiểu ' . number_format($voucher->min_order_amount, 0, ',', '.') . ' đ để sử dụng voucher'];
         }
         
         // Check product/category applicability
         if ($voucher->applies_to == 'specific_products' && !empty($voucher->product_ids)) {
+            error_log("Checking specific products");
             $allowedProducts = json_decode($voucher->product_ids, true);
+            error_log("Allowed products: " . print_r($allowedProducts, true));
             if (!array_intersect($productIds, $allowedProducts)) {
+                error_log("No products match");
                 return ['valid' => false, 'message' => 'Voucher không áp dụng cho các sản phẩm trong giỏ hàng'];
             }
         } elseif ($voucher->applies_to == 'specific_categories' && !empty($voucher->category_ids)) {
+            error_log("Checking specific categories");
             // Get categories of products in cart
             $allowedCategories = json_decode($voucher->category_ids, true);
             $cartCategories = $this->getProductCategories($productIds);
             
+            error_log("Allowed categories: " . print_r($allowedCategories, true));
+            error_log("Cart categories: " . print_r($cartCategories, true));
+            
             if (!array_intersect($cartCategories, $allowedCategories)) {
+                error_log("No categories match");
                 return ['valid' => false, 'message' => 'Voucher không áp dụng cho danh mục sản phẩm trong giỏ hàng'];
             }
         }
         
+        error_log("Voucher validation successful");
         return ['valid' => true, 'voucher' => $voucher];
     }
 

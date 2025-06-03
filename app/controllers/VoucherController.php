@@ -31,17 +31,14 @@ class VoucherController
         include 'app/views/voucher/list.php';
     }
     
-    // ADMIN ONLY - Thêm voucher
+    // ADMIN ONLY - Thêm voucher (DEPRECATED - use AdminController)
     public function add()
     {
         AuthHelper::requireAdmin('/webbanhang/account/login');
         
-        $products = $this->productModel->getProducts();
-        // Thêm categories
-        require_once('app/models/CategoryModel.php');
-        $categoryModel = new CategoryModel($this->db);
-        $categories = $categoryModel->getCategories();
-        include 'app/views/voucher/add.php';
+        // Redirect to proper admin interface
+        header('Location: /webbanhang/admin/vouchers/create');
+        exit;
     }
     
     // ADMIN ONLY - Lưu voucher mới
@@ -79,13 +76,9 @@ class VoucherController
             
             $result = $this->voucherModel->addVoucher($data);
             if (is_array($result)) {
-                $errors = $result;
-                $products = $this->productModel->getProducts();
-                // Thêm categories khi có lỗi
-                require_once('app/models/CategoryModel.php');
-                $categoryModel = new CategoryModel($this->db);
-                $categories = $categoryModel->getCategories();
-                include 'app/views/voucher/add.php';
+                // Redirect to admin create with error handling
+                header('Location: /webbanhang/admin/vouchers/create');
+                exit;
             } else {
                 header('Location: /webbanhang/admin/vouchers');
                 exit;
@@ -93,23 +86,14 @@ class VoucherController
         }
     }
     
-    // ADMIN ONLY - Form sửa voucher
+    // ADMIN ONLY - Form sửa voucher (DEPRECATED - use AdminController)
     public function edit($id)
     {
         AuthHelper::requireAdmin('/webbanhang/account/login');
         
-        $voucher = $this->voucherModel->getVoucherById($id);
-        $products = $this->productModel->getProducts();
-        // Thêm categories
-        require_once('app/models/CategoryModel.php');
-        $categoryModel = new CategoryModel($this->db);
-        $categories = $categoryModel->getCategories();
-        
-        if ($voucher) {
-            include 'app/views/voucher/edit.php';
-        } else {
-            echo "Không tìm thấy voucher.";
-        }
+        // Redirect to proper admin interface
+        header('Location: /webbanhang/admin/vouchers/edit/' . $id);
+        exit;
     }
     
     // ADMIN ONLY - Cập nhật voucher

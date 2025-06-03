@@ -104,10 +104,102 @@ if (isset($url[0]) && $url[0] === 'admin') {
     }
 }
 
+// Special routing for cart management
+if (isset($url[0]) && $url[0] === 'cart') {
+    $controllerName = 'CartController';
+    $action = isset($url[1]) && $url[1] != '' ? $url[1] : 'index';
+    
+    // Handle hyphenated actions
+    if ($action === 'apply-voucher') {
+        $action = 'applyVoucher';
+    } elseif ($action === 'remove-voucher') {
+        $action = 'removeVoucher';
+    }
+}
+
 // Special routing for order management
 if (isset($url[0]) && $url[0] === 'order') {
     $controllerName = 'OrderController';
     $action = isset($url[1]) && $url[1] != '' ? $url[1] : 'index';
+    
+    // Map create action
+    if ($action === 'create') {
+        $action = 'create';
+    }
+    // Map confirm action with ID
+    elseif ($action === 'confirm') {
+        $action = 'confirm';
+        // If there's an ID after confirm, pass it as parameter
+        if (isset($url[2]) && $url[2] != '') {
+            // Keep the ID for the confirm method
+        }
+    }
+    // Map payment processing actions
+    elseif ($action === 'processPayment') {
+        $action = 'processPayment';
+    }
+    elseif ($action === 'cancel') {
+        $action = 'cancel';
+    }
+    elseif ($action === 'reorder') {
+        $action = 'reorder';
+    }
+}
+
+// Special routing for checkout
+if (isset($url[0]) && $url[0] === 'checkout') {
+    $controllerName = 'OrderController';
+    $action = 'checkout';
+}
+
+// Special routing for user section
+if (isset($url[0]) && $url[0] === 'user') {
+    switch ($url[1] ?? '') {
+        case 'products':
+            $controllerName = 'ProductController';
+            $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'userIndex';
+            break;
+        case 'categories':
+            $controllerName = 'CategoryController';
+            $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'userIndex';
+            break;
+        case 'orders':
+            $controllerName = 'OrderController';
+            if (isset($url[2]) && $url[2] != '') {
+                // Handle user order sub-actions: view, payment, invoice
+                if ($url[2] === 'view' && isset($url[3])) {
+                    $action = 'view';
+                    $url[2] = $url[3]; // Pass order ID as parameter
+                } elseif ($url[2] === 'payment' && isset($url[3])) {
+                    $action = 'payment';
+                    $url[2] = $url[3]; // Pass order ID as parameter
+                } elseif ($url[2] === 'invoice' && isset($url[3])) {
+                    $action = 'invoice';
+                    $url[2] = $url[3]; // Pass order ID as parameter
+                } else {
+                    $action = $url[2];
+                }
+            } else {
+                $action = 'userIndex';
+            }
+            break;
+        case 'cart':
+            $controllerName = 'CartController';
+            $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'index';
+            break;
+        case 'profile':
+            $controllerName = 'AccountController';
+            $action = isset($url[2]) && $url[2] != '' ? $url[2] : 'profile';
+            break;
+        default:
+            $controllerName = 'ProductController';
+            $action = 'userIndex';
+    }
+}
+
+// Check if controller name is for API endpoints
+if ($controllerName === 'ProductController' && isset($url[1]) && $url[1] === 'api') {
+    $action = isset($url[2]) && $url[2] != '' ? 'api' . ucfirst($url[2]) : 'api';
 }
 
 // Check if controller file exists

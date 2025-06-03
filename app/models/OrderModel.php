@@ -66,37 +66,54 @@ class OrderModel {
      * Lấy đơn hàng với chi tiết sản phẩm
      */
     public function getOrderWithDetails($orderId) {
-        // Lấy thông tin đơn hàng
-        $orderSql = "SELECT o.*, a.username 
-                     FROM orders o 
-                     LEFT JOIN account a ON o.user_id = a.id 
-                     WHERE o.id = :id";
-        
-        $stmt = $this->db->prepare($orderSql);
-        $stmt->execute([':id' => $orderId]);
-        $order = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$order) {
+        try {
+            error_log("OrderModel::getOrderWithDetails - Start with orderId: " . $orderId);
+            
+            // Lấy thông tin đơn hàng - sử dụng 'account' table
+            $orderSql = "SELECT o.*, a.username 
+                         FROM orders o 
+                         LEFT JOIN account a ON o.user_id = a.id 
+                         WHERE o.id = :id";
+            
+            $stmt = $this->db->prepare($orderSql);
+            $stmt->execute([':id' => $orderId]);
+            $order = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$order) {
+                error_log("OrderModel::getOrderWithDetails - Order not found: " . $orderId);
+                return null;
+            }
+            
+            error_log("OrderModel::getOrderWithDetails - Order found: " . json_encode($order));
+            
+            // Lấy chi tiết đơn hàng
+            $detailsSql = "SELECT od.*, p.name as product_name, p.image
+                           FROM order_details od
+                           LEFT JOIN product p ON od.product_id = p.id
+                           WHERE od.order_id = :order_id";
+            
+            $stmt = $this->db->prepare($detailsSql);
+            $stmt->execute([':order_id' => $orderId]);
+            $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            error_log("OrderModel::getOrderWithDetails - Items found: " . count($items));
+            
+            // Nếu không có items, tạo items rỗng để tránh lỗi
+            $order['items'] = $items ?: [];
+            
+            // Tính subtotal
+            $order['subtotal'] = 0;
+            foreach ($order['items'] as $item) {
+                $order['subtotal'] += $item['price'] * $item['quantity'];
+            }
+            
+            error_log("OrderModel::getOrderWithDetails - Success, returning order");
+            return $order;
+            
+        } catch (Exception $e) {
+            error_log("OrderModel::getOrderWithDetails - Exception: " . $e->getMessage());
             return null;
         }
-        
-        // Lấy chi tiết đơn hàng
-        $detailsSql = "SELECT od.*, p.name as product_name, p.image
-                       FROM order_details od
-                       JOIN product p ON od.product_id = p.id
-                       WHERE od.order_id = :order_id";
-        
-        $stmt = $this->db->prepare($detailsSql);
-        $stmt->execute([':order_id' => $orderId]);
-        $order['items'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Tính subtotal
-        $order['subtotal'] = 0;
-        foreach ($order['items'] as $item) {
-            $order['subtotal'] += $item['price'] * $item['quantity'];
-        }
-        
-        return $order;
     }
     
     /**
@@ -223,6 +240,13 @@ class OrderModel {
         $stmt->execute();
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Lấy tất cả orders (alias cho getAllOrders)
+     */
+    public function getAll($limit = 50) {
+        return $this->getAllOrders($limit);
     }
 }
 ?> 

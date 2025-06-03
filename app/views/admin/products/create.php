@@ -1,5 +1,8 @@
 <?php include_once 'app/views/shares/header.php'; ?>
 
+<!-- CKEditor Script -->
+<script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -70,8 +73,9 @@
                                     <textarea class="form-control" 
                                               id="description" 
                                               name="description" 
-                                              rows="4" 
+                                              rows="8" 
                                               placeholder="Nhập mô tả chi tiết cho sản phẩm"><?php echo htmlspecialchars($_POST['description'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                    <div class="form-text">Sử dụng trình soạn thảo để định dạng nội dung.</div>
                                 </div>
                             </div>
                             
@@ -153,6 +157,26 @@
 </div>
 
 <script>
+// Initialize CKEditor for description
+CKEDITOR.replace('description', {
+    height: 300,
+    toolbarGroups: [
+        { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
+        { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
+        { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
+        { name: 'forms', groups: [ 'forms' ] },
+        { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+        { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
+        { name: 'links', groups: [ 'links' ] },
+        { name: 'insert', groups: [ 'insert' ] },
+        { name: 'styles', groups: [ 'styles' ] },
+        { name: 'colors', groups: [ 'colors' ] },
+        { name: 'tools', groups: [ 'tools' ] },
+        { name: 'others', groups: [ 'others' ] }
+    ],
+    removeButtons: 'Source,Save,NewPage,Preview,Print,Templates,Cut,Copy,Paste,PasteText,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Language,BidiRtl,BidiLtr,Flash,Smiley,SpecialChar,PageBreak,Iframe,Maximize,ShowBlocks,About'
+});
+
 function previewImage(input) {
     const preview = document.getElementById('preview');
     const previewDiv = document.getElementById('imagePreview');

@@ -42,7 +42,7 @@
                     <div class="position-relative product-img-wrapper">
                         <?php if (!empty($product->image)): ?>
                             <a href="/webbanhang/Product/show/<?php echo $product->id; ?>" class="product-img-container">
-                                <img src="/webbanhang/public/uploads/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
+                                <img src="/webbanhang/public/uploads/products/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
                                     class="card-img-top" alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="img-overlay"></div>
                             </a>
@@ -100,10 +100,10 @@
                             <?php if (AuthHelper::isAdmin()): ?>
                                 <!-- Admin: hiển thị button sửa/xóa -->
                                 <div class="btn-group" role="group">
-                                    <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-outline-secondary">
+                                    <a href="/webbanhang/admin/products/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-pencil"></i> Sửa
                                     </a>
-                                    <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
+                                    <a href="/webbanhang/admin/products/delete/<?php echo $product->id; ?>" 
                                        onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
                                        class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i> Xóa
@@ -147,7 +147,7 @@
                         <tr>
                             <td class="text-center">
                                 <?php if (!empty($product->image)): ?>
-                                    <img src="/webbanhang/public/uploads/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
+                                    <img src="/webbanhang/public/uploads/products/<?php echo htmlspecialchars($product->image, ENT_QUOTES, 'UTF-8'); ?>" 
                                          alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>"
                                          class="img-thumbnail product-thumbnail">
                                 <?php else: ?>
@@ -184,10 +184,10 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <?php if (AuthHelper::isAdmin()): ?>
-                                        <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-primary me-1">
+                                        <a href="/webbanhang/admin/products/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-primary me-1">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
+                                        <a href="/webbanhang/admin/products/delete/<?php echo $product->id; ?>" 
                                            onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
                                            class="btn btn-sm btn-danger me-1">
                                             <i class="bi bi-trash"></i>
@@ -216,9 +216,10 @@
 <style>
 /* Enhanced image handling */
 .product-img-wrapper {
-    height: 200px;
+    height: 280px;
     overflow: hidden;
-    background-color: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
 }
 
 .product-img-container {
@@ -232,16 +233,33 @@
 .product-img-container img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* This preserves aspect ratio */
+    object-fit: cover;
     transition: transform 0.5s ease, opacity 0.3s ease;
+    border-radius: 12px 12px 0 0;
 }
 
 .no-image {
-    background-color: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
 .card:hover .product-img-container img {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 .img-overlay {
@@ -260,10 +278,45 @@
 
 /* Price badge styling */
 .price-badge {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+/* Enhanced button styling */
+.btn {
+    border-radius: 8px;
     font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13,110,253,0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(25,135,84,0.3);
+}
+
+.card-title a {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.card-title a:hover {
+    color: #0d6efd;
+}
+
+/* Badge styling */
+.badge {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
 }
 
 /* Description preview styling */
@@ -271,6 +324,9 @@
     max-height: 80px;
     overflow: hidden;
     position: relative;
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .product-description-preview::after {
@@ -285,9 +341,10 @@
 
 /* DataTables custom styling */
 .product-thumbnail {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
 .description-cell {
@@ -302,6 +359,11 @@
     background-color: #0d6efd;
     color: white;
     border-color: #0d6efd;
+}
+
+.display-5 {
+    color: #2c3e50;
+    font-weight: 700;
 }
 </style>
 

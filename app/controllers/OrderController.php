@@ -19,7 +19,7 @@ class OrderController {
     public function create() {
         AuthHelper::requireLogin();
         
-        include_once 'app/views/orders/create.php';
+        include_once 'app/views/user/orders/create.php';
     }
     
     /**
@@ -53,7 +53,7 @@ class OrderController {
             }
             
             if (count($errors) > 0) {
-                include_once 'app/views/orders/create.php';
+                include_once 'app/views/user/orders/create.php';
                 return;
             }
             
@@ -102,7 +102,7 @@ class OrderController {
                 
             } catch (Exception $e) {
                 $errors['order'] = "Lỗi khi tạo đơn hàng: " . $e->getMessage();
-                include_once 'app/views/orders/create.php';
+                include_once 'app/views/user/orders/create.php';
             }
         }
     }
@@ -143,30 +143,203 @@ class OrderController {
             // User chỉ xem đơn hàng của mình
             $userId = AuthHelper::getUserId();
             $orders = $this->orderModel->getOrdersByUserId($userId);
-            include_once 'app/views/orders/index.php';
+            
+            // Convert to objects for view compatibility và add item details
+            $orderObjects = [];
+            foreach ($orders as $order) {
+                $orderDetails = $this->orderModel->getOrderWithDetails($order['id']);
+                
+                $orderObj = (object)[
+                    'id' => $order['id'],
+                    'order_status' => $order['order_status'],
+                    'created_at' => $order['created_at'],
+                    'name' => $order['name'],
+                    'phone' => $order['phone'],
+                    'address' => $order['address'],
+                    'total_amount' => $order['total_amount'],
+                    'item_count' => count($orderDetails['items'] ?? []),
+                    'items' => []
+                ];
+                
+                // Add product details for display
+                if (isset($orderDetails['items'])) {
+                    foreach ($orderDetails['items'] as $item) {
+                        $orderObj->items[] = (object)[
+                            'name' => $item['product_name'],
+                            'quantity' => $item['quantity'],
+                            'image' => $item['image'] ?? 'no-image.jpg'
+                        ];
+                    }
+                }
+                
+                $orderObjects[] = $orderObj;
+            }
+            
+            $orders = $orderObjects;
+            include_once 'app/views/user/orders/index.php';
         }
     }
     
     /**
-     * Xác nhận đơn hàng
+     * User orders page - specifically for /user/orders route
      */
-    public function confirm($orderId) {
+    public function userIndex() {
         AuthHelper::requireLogin();
         
-        if (!AuthHelper::canViewOrder($orderId)) {
-            http_response_code(403);
-            include 'app/views/errors/403.php';
+        $userId = AuthHelper::getUserId();
+        $orders = $this->orderModel->getOrdersByUserId($userId);
+        
+        // Convert to objects for view compatibility và add item details
+        $orderObjects = [];
+        foreach ($orders as $order) {
+            $orderDetails = $this->orderModel->getOrderWithDetails($order['id']);
+            
+            $orderObj = (object)[
+                'id' => $order['id'],
+                'order_status' => $order['order_status'],
+                'created_at' => $order['created_at'],
+                'name' => $order['name'],
+                'phone' => $order['phone'],
+                'address' => $order['address'],
+                'total_amount' => $order['total_amount'],
+                'item_count' => count($orderDetails['items'] ?? []),
+                'items' => []
+            ];
+            
+            // Add product details for display
+            if (isset($orderDetails['items'])) {
+                foreach ($orderDetails['items'] as $item) {
+                    $orderObj->items[] = (object)[
+                        'name' => $item['product_name'],
+                        'quantity' => $item['quantity'],
+                        'image' => $item['image'] ?? 'no-image.jpg'
+                    ];
+                }
+            }
+            
+            $orderObjects[] = $orderObj;
+        }
+        
+        $orders = $orderObjects;
+        include_once 'app/views/user/orders/index.php';
+    }
+
+    /**
+     * Checkout page - for /checkout route
+     */
+    public function checkout() {
+        // Get cart items from session
+        $cartItems = [];
+        $total = 0;
+        
+        if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+            $productModel = new ProductModel($this->db);
+            
+            foreach ($_SESSION['cart'] as $productId => $item) {
+                $product = $productModel->getProductById($productId);
+                if ($product) {
+                    $cartItem = (object)[
+                        'id' => $productId,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'image' => $product->image,
+                        'quantity' => $item['quantity'],
+                        'subtotal' => $product->price * $item['quantity']
+                    ];
+                    $cartItems[] = $cartItem;
+                    $total += $cartItem->subtotal;
+                }
+            }
+        }
+        
+        // If cart is empty, redirect to cart page
+        if (empty($cartItems)) {
+            header('Location: /webbanhang/cart');
             exit;
         }
         
-        $order = $this->orderModel->getOrderWithDetails($orderId);
-        if (!$order) {
-            http_response_code(404);
-            include 'app/views/errors/404.php';
+        include_once 'app/views/user/checkout/index.php';
+    }
+    
+    /**
+     * Trang xác nhận đơn hàng đã đặt
+     */
+    public function confirm($orderId = null) {
+        // Enable error reporting for debugging
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+        
+        // Debug info
+        error_log("OrderController::confirm called with orderId: " . ($orderId ?? 'null'));
+        
+        // Nếu không có orderId, thử lấy từ URL hoặc session
+        if (!$orderId) {
+            // Lấy từ URL params
+            $urlParts = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
+            $orderId = end($urlParts);
+            error_log("OrderController::confirm - orderId from URL: " . $orderId);
+        }
+        
+        if (!$orderId || !is_numeric($orderId)) {
+            error_log("OrderController::confirm - Invalid orderId: " . $orderId);
+            echo "<h1>Error: Invalid Order ID</h1>";
+            echo "<p>Order ID '{$orderId}' is not valid</p>";
+            echo "<p><a href='/webbanhang/'>Go to Homepage</a></p>";
             exit;
         }
         
-        include_once 'app/views/orders/confirm.php';
+        // Check if user is logged in first
+        if (!AuthHelper::isLoggedIn()) {
+            error_log("OrderController::confirm - User not logged in");
+            echo "<h1>Error: Not Logged In</h1>";
+            echo "<p>You must be logged in to view this page</p>";
+            echo "<p><a href='/webbanhang/account/login'>Login</a></p>";
+            exit;
+        }
+        
+        try {
+            // Check if user can view this order
+            if (!AuthHelper::canViewOrder($orderId)) {
+                error_log("OrderController::confirm - User cannot view order: " . $orderId);
+                echo "<h1>Error: Access Denied</h1>";
+                echo "<p>You don't have permission to view this order</p>";
+                echo "<p><a href='/webbanhang/'>Go to Homepage</a></p>";
+                exit;
+            }
+            
+            // Get order with details
+            $order = $this->orderModel->getOrderWithDetails($orderId);
+            if (!$order) {
+                error_log("OrderController::confirm - Order not found: " . $orderId);
+                echo "<h1>Error: Order Not Found</h1>";
+                echo "<p>Order #{$orderId} was not found</p>";
+                echo "<p><a href='/webbanhang/'>Go to Homepage</a></p>";
+                exit;
+            }
+            
+            error_log("OrderController::confirm - Order loaded successfully: " . $orderId);
+            
+            // Check if view file exists
+            $viewFile = 'app/views/orders/confirm.php';
+            if (!file_exists($viewFile)) {
+                error_log("OrderController::confirm - View file not found: " . $viewFile);
+                echo "<h1>Error: View File Missing</h1>";
+                echo "<p>The confirm view file is missing</p>";
+                exit;
+            }
+            
+            // Include the view
+            include_once $viewFile;
+            
+        } catch (Exception $e) {
+            error_log("OrderController::confirm - Exception: " . $e->getMessage());
+            echo "<h1>System Error</h1>";
+            echo "<p>An error occurred: " . htmlspecialchars($e->getMessage()) . "</p>";
+            echo "<p><strong>File:</strong> " . $e->getFile() . "</p>";
+            echo "<p><strong>Line:</strong> " . $e->getLine() . "</p>";
+            echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+            exit;
+        }
     }
     
     /**
@@ -222,6 +395,185 @@ class OrderController {
         }
         
         return min($discount, $orderTotal);
+    }
+    
+    /**
+     * Xem chi tiết đơn hàng (user view detail)
+     */
+    public function view($orderId) {
+        AuthHelper::requireLogin();
+        
+        $userId = AuthHelper::getUserId();
+        $order = $this->orderModel->getOrderWithDetails($orderId);
+        
+        // Kiểm tra quyền xem
+        if (!$order || (!AuthHelper::isAdmin() && $order['user_id'] != $userId)) {
+            http_response_code(403);
+            include 'app/views/errors/403.php';
+            exit;
+        }
+        
+        include_once 'app/views/user/orders/view.php';
+    }
+    
+    /**
+     * Thanh toán đơn hàng
+     */
+    public function payment($orderId) {
+        AuthHelper::requireLogin();
+        
+        $userId = AuthHelper::getUserId();
+        $order = $this->orderModel->getOrderWithDetails($orderId);
+        
+        // Kiểm tra quyền và trạng thái
+        if (!$order || (!AuthHelper::isAdmin() && $order['user_id'] != $userId)) {
+            http_response_code(403);
+            include 'app/views/errors/403.php';
+            exit;
+        }
+        
+        if ($order['order_status'] !== 'unpaid') {
+            header('Location: /webbanhang/user/orders');
+            exit;
+        }
+        
+        include_once 'app/views/user/orders/payment.php';
+    }
+    
+    /**
+     * Xử lý thanh toán
+     */
+    public function processPayment() {
+        AuthHelper::requireLogin();
+        
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $orderId = $_POST['order_id'] ?? '';
+            $paymentMethod = $_POST['payment_method'] ?? '';
+            
+            $userId = AuthHelper::getUserId();
+            $order = $this->orderModel->getOrderWithDetails($orderId);
+            
+            // Kiểm tra quyền
+            if (!$order || (!AuthHelper::isAdmin() && $order['user_id'] != $userId)) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Không có quyền truy cập']);
+                exit;
+            }
+            
+            // Cập nhật trạng thái thanh toán
+            $updated = $this->orderModel->updateOrderStatus($orderId, 'paid');
+            
+            if ($updated) {
+                echo json_encode(['success' => true, 'message' => 'Thanh toán thành công']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi thanh toán']);
+            }
+        }
+    }
+    
+    /**
+     * Hủy đơn hàng
+     */
+    public function cancel() {
+        AuthHelper::requireLogin();
+        
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $orderId = $_POST['order_id'] ?? '';
+            $userId = AuthHelper::getUserId();
+            $order = $this->orderModel->getOrderWithDetails($orderId);
+            
+            // Kiểm tra quyền
+            if (!$order || (!AuthHelper::isAdmin() && $order['user_id'] != $userId)) {
+                echo json_encode(['success' => false, 'message' => 'Không có quyền truy cập']);
+                exit;
+            }
+            
+            // Chỉ có thể hủy đơn hàng chưa thanh toán
+            if ($order['order_status'] !== 'unpaid') {
+                echo json_encode(['success' => false, 'message' => 'Không thể hủy đơn hàng đã thanh toán']);
+                exit;
+            }
+            
+            $updated = $this->orderModel->updateOrderStatus($orderId, 'cancelled');
+            
+            if ($updated) {
+                echo json_encode(['success' => true, 'message' => 'Đơn hàng đã được hủy']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi hủy đơn hàng']);
+            }
+        }
+    }
+    
+    /**
+     * Tải hóa đơn
+     */
+    public function invoice($orderId) {
+        AuthHelper::requireLogin();
+        
+        $userId = AuthHelper::getUserId();
+        $order = $this->orderModel->getOrderWithDetails($orderId);
+        
+        // Kiểm tra quyền
+        if (!$order || (!AuthHelper::isAdmin() && $order['user_id'] != $userId)) {
+            http_response_code(403);
+            include 'app/views/errors/403.php';
+            exit;
+        }
+        
+        // Generate PDF invoice
+        $this->generateInvoicePDF($order);
+    }
+    
+    /**
+     * Generate PDF hóa đơn
+     */
+    private function generateInvoicePDF($order) {
+        // Set headers for PDF download
+        header('Content-Type: text/html; charset=utf-8');
+        header('Content-Disposition: inline; filename="hoa-don-' . $order['id'] . '.html"');
+        
+        // Include invoice template
+        include_once 'app/views/user/orders/invoice.php';
+    }
+    
+    /**
+     * Mua lại đơn hàng
+     */
+    public function reorder() {
+        AuthHelper::requireLogin();
+        
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $orderId = $_POST['order_id'] ?? '';
+            $userId = AuthHelper::getUserId();
+            $order = $this->orderModel->getOrderWithDetails($orderId);
+            
+            // Kiểm tra quyền
+            if (!$order || (!AuthHelper::isAdmin() && $order['user_id'] != $userId)) {
+                echo json_encode(['success' => false, 'message' => 'Không có quyền truy cập']);
+                exit;
+            }
+            
+            // Thêm các sản phẩm vào giỏ hàng
+            if (!isset($_SESSION['cart'])) {
+                $_SESSION['cart'] = [];
+            }
+            
+            foreach ($order['items'] as $item) {
+                $productId = $item['product_id'];
+                if (isset($_SESSION['cart'][$productId])) {
+                    $_SESSION['cart'][$productId]['quantity'] += $item['quantity'];
+                } else {
+                    $_SESSION['cart'][$productId] = [
+                        'name' => $item['product_name'],
+                        'price' => $item['price'],
+                        'quantity' => $item['quantity'],
+                        'image' => $item['image'] ?? 'no-image.jpg'
+                    ];
+                }
+            }
+            
+            echo json_encode(['success' => true, 'message' => 'Đã thêm sản phẩm vào giỏ hàng']);
+        }
     }
 }
 ?> 
