@@ -33,16 +33,18 @@
                 <div class="p-4 p-md-5">
                     <div class="d-flex justify-content-between align-items-start">
                         <h1 class="display-6 fw-bold mb-3"><?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?></h1>
-                        <div class="d-flex">
-                            <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-primary me-2">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
-                               onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
-                               class="btn btn-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
+                        <?php if (AuthHelper::isAdmin()): ?>
+                            <div class="d-flex">
+                                <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-primary me-2">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
+                                   class="btn btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="mb-4">

@@ -306,5 +306,47 @@ class VoucherModel
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+    
+    /**
+     * Đếm tổng số voucher
+     */
+    public function getVoucherCount()
+    {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'];
+    }
+    
+    /**
+     * Method for admin functionality
+     */
+    public function getAll()
+    {
+        return $this->getVouchers();
+    }
+    
+    public function save($data)
+    {
+        return $this->addVoucher($data);
+    }
+    
+    /**
+     * Alias cho getVoucherById
+     */
+    public function getById($voucherId)
+    {
+        $voucher = $this->getVoucherById($voucherId);
+        return $voucher ? (array)$voucher : null;
+    }
+    
+    /**
+     * Alias cho updateVoucher
+     */
+    public function update($voucherId, $data)
+    {
+        return $this->updateVoucher($voucherId, $data);
+    }
 }
 ?>

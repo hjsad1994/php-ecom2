@@ -3,6 +3,7 @@
 require_once('app/config/database.php');
 require_once('app/models/VoucherModel.php');
 require_once('app/models/ProductModel.php');
+require_once('app/helpers/AuthHelper.php');
 
 class VoucherController
 {
@@ -21,14 +22,20 @@ class VoucherController
         $this->productModel = new ProductModel($this->db);
     }
     
+    // ADMIN ONLY - Xem danh sách voucher
     public function index()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         $vouchers = $this->voucherModel->getVouchers();
         include 'app/views/voucher/list.php';
     }
     
+    // ADMIN ONLY - Thêm voucher
     public function add()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         $products = $this->productModel->getProducts();
         // Thêm categories
         require_once('app/models/CategoryModel.php');
@@ -37,8 +44,11 @@ class VoucherController
         include 'app/views/voucher/add.php';
     }
     
+    // ADMIN ONLY - Lưu voucher mới
     public function save()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
                 'code' => strtoupper(trim($_POST['code'] ?? '')),
@@ -77,14 +87,17 @@ class VoucherController
                 $categories = $categoryModel->getCategories();
                 include 'app/views/voucher/add.php';
             } else {
-                header('Location: /webbanhang/Voucher');
+                header('Location: /webbanhang/admin/vouchers');
                 exit;
             }
         }
     }
     
+    // ADMIN ONLY - Form sửa voucher
     public function edit($id)
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         $voucher = $this->voucherModel->getVoucherById($id);
         $products = $this->productModel->getProducts();
         // Thêm categories
@@ -99,8 +112,11 @@ class VoucherController
         }
     }
     
+    // ADMIN ONLY - Cập nhật voucher
     public function update()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $data = [
@@ -129,7 +145,7 @@ class VoucherController
             }
             
             if ($this->voucherModel->updateVoucher($id, $data)) {
-                header('Location: /webbanhang/Voucher');
+                header('Location: /webbanhang/admin/vouchers');
                 exit;
             } else {
                 echo "Đã xảy ra lỗi khi cập nhật voucher.";
@@ -137,15 +153,20 @@ class VoucherController
         }
     }
     
+    // ADMIN ONLY - Xóa voucher
     public function delete($id)
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         if ($this->voucherModel->deleteVoucher($id)) {
-            header('Location: /webbanhang/Voucher');
+            header('Location: /webbanhang/admin/vouchers');
+            exit;
         } else {
             echo "Đã xảy ra lỗi khi xóa voucher.";
         }
     }
     
+    // PUBLIC - Validate voucher code (user có thể sử dụng)
     public function validateVoucherCode()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -174,10 +195,12 @@ class VoucherController
         }
     }
     
+    // PUBLIC - Remove voucher (user có thể sử dụng)
     public function removeVoucher()
     {
         unset($_SESSION['applied_voucher']);
-        header('Location: /webbanhang/Product/cart');
+        header('Location: /webbanhang/product/cart');
+        exit;
     }
 }
 ?>

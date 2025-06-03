@@ -13,16 +13,24 @@
                 <i class="bi bi-table me-1"></i> Bảng
             </button>
         </div>
-        <a href="/webbanhang/Product/add" class="btn btn-success btn-lg">
-            <i class="bi bi-plus-circle me-2"></i>Thêm sản phẩm mới
-        </a>
+        <?php if (AuthHelper::isAdmin()): ?>
+            <a href="/webbanhang/Product/add" class="btn btn-success btn-lg">
+                <i class="bi bi-plus-circle me-2"></i>Thêm sản phẩm mới
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 
 <?php if (empty($products)): ?>
     <div class="alert alert-info shadow-sm d-flex align-items-center" role="alert">
         <i class="bi bi-info-circle-fill me-2 fs-4"></i>
-        <div>Chưa có sản phẩm nào. Hãy thêm sản phẩm mới!</div>
+        <div>
+            <?php if (AuthHelper::isAdmin()): ?>
+                Chưa có sản phẩm nào. Hãy thêm sản phẩm mới!
+            <?php else: ?>
+                Hiện tại chưa có sản phẩm nào.
+            <?php endif; ?>
+        </div>
     </div>
 <?php else: ?>
     <!-- Card View (Default) -->
@@ -89,19 +97,28 @@
                     
                     <div class="card-footer bg-white border-top-0 pt-0">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group" role="group">
-                                <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-pencil"></i> Sửa
+                            <?php if (AuthHelper::isAdmin()): ?>
+                                <!-- Admin: hiển thị button sửa/xóa -->
+                                <div class="btn-group" role="group">
+                                    <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i> Sửa
+                                    </a>
+                                    <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </a>
+                                </div>
+                                <a href="/webbanhang/Product/addToCart/<?php echo $product->id; ?>" class="btn btn-sm btn-success">
+                                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ
                                 </a>
-                                <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
-                                   onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
-                                   class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i> Xóa
+                            <?php else: ?>
+                                <!-- User: chỉ hiển thị button mua hàng -->
+                                <span></span> <!-- Empty span for spacing -->
+                                <a href="/webbanhang/Product/addToCart/<?php echo $product->id; ?>" class="btn btn-sm btn-success">
+                                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ
                                 </a>
-                            </div>
-                            <a href="/webbanhang/Product/addToCart/<?php echo $product->id; ?>" class="btn btn-sm btn-success">
-                                <i class="bi bi-cart-plus"></i> Thêm vào giỏ
-                            </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -166,13 +183,18 @@
                                     <a href="/webbanhang/Product/show/<?php echo $product->id; ?>" class="btn btn-sm btn-info me-1">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-primary me-1">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
-                                       class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i>
+                                    <?php if (AuthHelper::isAdmin()): ?>
+                                        <a href="/webbanhang/Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-primary me-1">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="/webbanhang/Product/delete/<?php echo $product->id; ?>" 
+                                           onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');" 
+                                           class="btn btn-sm btn-danger me-1">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                    <a href="/webbanhang/Product/addToCart/<?php echo $product->id; ?>" class="btn btn-sm btn-success">
+                                        <i class="bi bi-cart-plus"></i>
                                     </a>
                                 </div>
                             </td>

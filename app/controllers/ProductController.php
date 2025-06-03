@@ -2,6 +2,7 @@
 require_once('app/config/database.php');
 require_once('app/models/ProductModel.php');
 require_once('app/models/CategoryModel.php');
+require_once('app/helpers/AuthHelper.php');
 
 class ProductController
 {
@@ -28,12 +29,14 @@ class ProductController
         }
     }
     
+    // PUBLIC - Xem danh sách sản phẩm (cho mọi người)
     public function index()
     {
         $products = $this->productModel->getProducts();
         include 'app/views/product/list.php';
     }
     
+    // PUBLIC - Xem chi tiết sản phẩm (cho mọi người)
     public function show($id)
     {
         $product = $this->productModel->getProductById($id);
@@ -44,14 +47,20 @@ class ProductController
         }
     }
     
+    // ADMIN ONLY - Thêm sản phẩm
     public function add()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         $categories = (new CategoryModel($this->db))->getCategories();
         include_once 'app/views/product/add.php';
     }
     
+    // ADMIN ONLY - Lưu sản phẩm mới
     public function save()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $name = $_POST['name'] ?? '';
             $description = $_POST['description'] ?? '';
@@ -89,13 +98,17 @@ class ProductController
                 $categories = (new CategoryModel($this->db))->getCategories();
                 include 'app/views/product/add.php';
             } else {
-                header('Location: /webbanhang/Product');
+                header('Location: /webbanhang/admin/products');
+                exit;
             }
         }
     }
     
+    // ADMIN ONLY - Form sửa sản phẩm
     public function edit($id)
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         $product = $this->productModel->getProductById($id);
         $categories = (new CategoryModel($this->db))->getCategories();
         if ($product) {
@@ -105,8 +118,11 @@ class ProductController
         }
     }
     
+    // ADMIN ONLY - Cập nhật sản phẩm
     public function update()
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $name = $_POST['name'];
@@ -144,24 +160,30 @@ class ProductController
             
             $edit = $this->productModel->updateProduct($id, $name, $description, $price, $category_id, $image_name);
             if ($edit) {
-                header('Location: /webbanhang/Product');
+                header('Location: /webbanhang/admin/products');
+                exit;
             } else {
                 echo "Đã xảy ra lỗi khi lưu sản phẩm.";
             }
         }
     }
     
+    // ADMIN ONLY - Xóa sản phẩm
     public function delete($id)
     {
+        AuthHelper::requireAdmin('/webbanhang/account/login');
+        
         if ($this->productModel->deleteProduct($id)) {
-            header('Location: /webbanhang/Product');
+            header('Location: /webbanhang/admin/products');
+            exit;
         } else {
             echo "Đã xảy ra lỗi khi xóa sản phẩm.";
         }
     }
 
-    // SHOPPING CART FUNCTIONALITY
+    // ========== USER SHOPPING FUNCTIONS ==========
     
+    // USER - Thêm vào giỏ hàng
     public function addToCart($id)
     {
         $product = $this->productModel->getProductById($id);
@@ -185,15 +207,18 @@ class ProductController
             ];
         }
 
-        header('Location: /webbanhang/Product/cart');
+        header('Location: /webbanhang/product/cart');
+        exit;
     }
 
+    // USER - Xóa khỏi giỏ hàng
     public function removeFromCart($id)
     {
         if (isset($_SESSION['cart'][$id])) {
             unset($_SESSION['cart'][$id]);
         }
-        header('Location: /webbanhang/Product/cart');
+        header('Location: /webbanhang/product/cart');
+        exit;
     }
 
     public function updateCartQuantity()

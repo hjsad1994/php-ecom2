@@ -95,5 +95,73 @@ class CategoryModel
             return false;
         }
     }
+    
+    /**
+     * Đếm tổng số danh mục
+     */
+    public function getCategoryCount()
+    {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'];
+    }
+    
+    /**
+     * Methods for admin functionality
+     */
+    public function getAll()
+    {
+        return $this->getCategories();
+    }
+    
+    public function save($name, $description)
+    {
+        return $this->addCategory($name, $description);
+    }
+    
+    /**
+     * Lấy danh mục theo ID
+     */
+    public function getById($categoryId) {
+        $sql = "SELECT * FROM category WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':id' => $categoryId]);
+        
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+    
+    /**
+     * Cập nhật danh mục
+     */
+    public function update($categoryId, $name, $description) {
+        $sql = "UPDATE category SET name = :name, description = :description WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        
+        // Preserve HTML in description, only sanitize name
+        $name = htmlspecialchars(strip_tags($name));
+        $description = $description; // Keep HTML tags intact
+        
+        return $stmt->execute([
+            ':name' => $name,
+            ':description' => $description,
+            ':id' => $categoryId
+        ]);
+    }
+    
+    /**
+     * Lấy tất cả danh mục với số lượng sản phẩm
+     */
+    public function getAllWithProductCount() {
+        $query = "SELECT c.*, COUNT(p.id) as product_count
+                  FROM " . $this->table_name . " c
+                  LEFT JOIN product p ON c.id = p.category_id
+                  GROUP BY c.id, c.name, c.description
+                  ORDER BY c.id DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 }
 ?>

@@ -1,6 +1,7 @@
 <?php
 require_once('app/config/database.php');
 require_once('app/models/AccountModel.php');
+require_once('app/helpers/AuthHelper.php');
 
 class AccountController {
     private $accountModel;
@@ -84,6 +85,8 @@ class AccountController {
         session_start();
         unset($_SESSION['username']);
         unset($_SESSION['user_role']);
+        unset($_SESSION['user_id']);
+        session_destroy();
         header('Location: /webbanhang/product');
         exit;
     }
@@ -115,7 +118,14 @@ class AccountController {
                     session_start();
                     $_SESSION['username'] = $account->username;
                     $_SESSION['user_role'] = $account->role ?? 'user';
-                    header('Location: /webbanhang/product');
+                    $_SESSION['user_id'] = $account->id;
+                    
+                    // Redirect dựa trên role
+                    if ($account->role === 'admin') {
+                        header('Location: /webbanhang/admin/dashboard');
+                    } else {
+                        header('Location: /webbanhang/product');
+                    }
                     exit;
                 } else {
                     $errors['login'] = "Mật khẩu không đúng.";

@@ -1,12 +1,13 @@
 <?php
 require_once 'app/helpers/SessionHelper.php';
+require_once 'app/helpers/AuthHelper.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý sản phẩm</title>
+    <title>Website Bán Hàng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +17,6 @@ require_once 'app/helpers/SessionHelper.php';
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f8f9fa;
-            padding-bottom: 50px;
         }
         .navbar {
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -94,6 +94,7 @@ require_once 'app/helpers/SessionHelper.php';
         }
         .nav-link {
             font-weight: 500;
+            white-space: nowrap;
         }
         .nav-link:hover {
             color: #fff !important;
@@ -110,6 +111,7 @@ require_once 'app/helpers/SessionHelper.php';
         .user-greeting {
             color: rgba(255,255,255,0.9);
             font-weight: 500;
+            white-space: nowrap;
         }
         .admin-badge {
             background-color: #ffc107;
@@ -119,87 +121,171 @@ require_once 'app/helpers/SessionHelper.php';
             font-size: 11px;
             font-weight: 600;
         }
+        .user-badge {
+            background-color: #17a2b8;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
         .product-image {
             max-width: 100px;
             height: auto;
         }
+        .admin-navbar {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #3498db 75%, #2980b9 100%);
+        }
+        .user-navbar {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #3498db 75%, #2980b9 100%);
+        }
+        .dropdown-menu {
+            background-color: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .dropdown-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .navbar-nav .nav-item {
+            margin: 0 2px;
+        }
+        .compact-nav .nav-link {
+            padding: 0.4rem 0.6rem !important;
+            font-size: 0.85rem;
+        }
+        .navbar-toggler {
+            border: none;
+            padding: 0.25rem 0.5rem;
+        }
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 py-3">
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 py-2 <?php echo AuthHelper::isAdmin() ? 'admin-navbar' : 'user-navbar'; ?>">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="/webbanhang">
-                <i class="bi bi-shop me-2 fs-3"></i>
-                <span class="fw-bold">Quản lý sản phẩm</span>
+                <i class="bi bi-shop me-2 fs-4"></i>
+                <span class="fw-bold">
+                    <?php if (AuthHelper::isAdmin()): ?>
+                        Admin Panel
+                    <?php else: ?>
+                        Cửa Hàng Online
+                    <?php endif; ?>
+                </span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item mx-1">
-                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Product') !== false && strpos($_SERVER['REQUEST_URI'], '/Product/add') === false) ? 'active-nav' : ''; ?>" href="/webbanhang/Product/">
-                            <i class="bi bi-grid me-1"></i> Sản phẩm
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Product/add') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/Product/add">
-                            <i class="bi bi-plus-circle me-1"></i> Thêm SP
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Category') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/Category/">
-                            <i class="bi bi-tag me-1"></i> Danh mục
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Product/orders') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/Product/orders">
-                            <i class="bi bi-list-check me-1"></i> Đơn hàng
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/Voucher') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/Voucher">
-                            <i class="bi bi-ticket-perforated me-1"></i> Voucher
-                        </a>
-                    </li>
-                    <li class="nav-item mx-1">
-                        <a class="nav-link px-3 py-2 position-relative" href="/webbanhang/Product/cart">
-                            <i class="bi bi-cart me-1"></i> Giỏ hàng
-                            <?php if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    <?php echo array_sum(array_column($_SESSION['cart'], 'quantity')); ?>
-                                </span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
+                <ul class="navbar-nav ms-auto compact-nav">
+                    
+                    <?php if (AuthHelper::isAdmin()): ?>
+                        <!-- ADMIN MENU - Flat Structure -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/admin/dashboard">
+                                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/admin/products">
+                                <i class="bi bi-box me-1"></i>Sản phẩm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/admin/categories">
+                                <i class="bi bi-tags me-1"></i>Danh mục
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/admin/vouchers">
+                                <i class="bi bi-ticket-perforated me-1"></i>Voucher
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/admin/orders">
+                                <i class="bi bi-list-check me-1"></i>Đơn hàng
+                            </a>
+                        </li>
+                        
+                    <?php elseif (AuthHelper::isUser()): ?>
+                        <!-- USER MENU - Shopping Functions -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/product">
+                                <i class="bi bi-grid me-1"></i>Sản phẩm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/category">
+                                <i class="bi bi-tag me-1"></i>Danh mục
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="/webbanhang/cart">
+                                <i class="bi bi-cart me-1"></i>Giỏ hàng
+                                <?php if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        <?php echo array_sum(array_column($_SESSION['cart'], 'quantity')); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/order">
+                                <i class="bi bi-receipt me-1"></i>Đơn hàng
+                            </a>
+                        </li>
+                        
+                    <?php else: ?>
+                        <!-- GUEST MENU - Public Access -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/product">
+                                <i class="bi bi-grid me-1"></i>Sản phẩm
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/category">
+                                <i class="bi bi-tag me-1"></i>Danh mục
+                            </a>
+                        </li>
+                    <?php endif; ?>
                     
                     <!-- Authentication Links -->
                     <?php if (SessionHelper::isLoggedIn()): ?>
                         <!-- User is logged in -->
-                        <li class="nav-item mx-1 d-flex align-items-center">
-                            <span class="user-greeting me-3">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>
-                                Xin chào, <strong><?= htmlspecialchars(SessionHelper::getUsername()) ?></strong>
+                                <?= htmlspecialchars(SessionHelper::getUsername()) ?>
                                 <?php if (SessionHelper::isAdmin()): ?>
                                     <span class="admin-badge ms-1">ADMIN</span>
+                                <?php else: ?>
+                                    <span class="user-badge ms-1">USER</span>
                                 <?php endif; ?>
-                            </span>
-                        </li>
-                        <li class="nav-item mx-1">
-                            <a class="nav-link px-3 py-2" href="/webbanhang/account/logout">
-                                <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
                             </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="/webbanhang/account/profile">
+                                    <i class="bi bi-person me-2"></i>Hồ sơ
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/webbanhang/account/logout">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                                </a></li>
+                            </ul>
                         </li>
                     <?php else: ?>
                         <!-- User is not logged in -->
-                        <li class="nav-item mx-1">
-                            <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/account/login') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/account/login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo (strpos($_SERVER['REQUEST_URI'], '/account/login') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/account/login">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
                             </a>
                         </li>
-                        <li class="nav-item mx-1">
-                            <a class="nav-link px-3 py-2 <?php echo (strpos($_SERVER['REQUEST_URI'], '/account/register') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/account/register">
-                                <i class="bi bi-person-plus me-1"></i> Đăng ký
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo (strpos($_SERVER['REQUEST_URI'], '/account/register') !== false) ? 'active-nav' : ''; ?>" href="/webbanhang/account/register">
+                                <i class="bi bi-person-plus me-1"></i>Đăng ký
                             </a>
                         </li>
                     <?php endif; ?>

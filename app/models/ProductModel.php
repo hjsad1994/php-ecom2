@@ -50,8 +50,8 @@ class ProductModel
                   VALUES (:name, :description, :price, :category_id, :image)";
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
-        // Don't strip HTML tags from description to preserve formatting
-        $description = htmlspecialchars_decode($description);
+        // Preserve HTML tags in description for rich text formatting
+        $description = $description; // Keep HTML tags intact
         $price = htmlspecialchars(strip_tags($price));
         
         // Check if category_id is null before applying string functions
@@ -87,8 +87,8 @@ class ProductModel
         
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
-        // Don't strip HTML tags from description to preserve formatting
-        $description = htmlspecialchars_decode($description);
+        // Preserve HTML tags in description for rich text formatting
+        $description = $description; // Keep HTML tags intact
         $price = htmlspecialchars(strip_tags($price));
         
         if ($category_id !== null) {
@@ -126,6 +126,81 @@ class ProductModel
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Đếm tổng số sản phẩm
+     */
+    public function getProductCount()
+    {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'];
+    }
+    
+    /**
+     * Lấy tất cả sản phẩm với thông tin category
+     */
+    public function getAllWithCategory()
+    {
+        return $this->getProducts(); // Đã có sẵn logic này
+    }
+    
+    /**
+     * Lấy sản phẩm theo category
+     */
+    public function getProductsByCategory($categoryId)
+    {
+        $query = "SELECT p.id, p.name, p.description, p.price, p.image, c.name as category_name
+                  FROM " . $this->table_name . " p
+                  LEFT JOIN category c ON p.category_id = c.id
+                  WHERE p.category_id = :category_id
+                  ORDER BY p.id DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':category_id', $categoryId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);  // Trả về FETCH_ASSOC để dùng trong view
+    }
+    
+    /**
+     * Tìm kiếm sản phẩm
+     */
+    public function searchProducts($keyword)
+    {
+        $query = "SELECT p.id, p.name, p.description, p.price, p.image, c.name as category_name
+                  FROM " . $this->table_name . " p
+                  LEFT JOIN category c ON p.category_id = c.id
+                  WHERE p.name LIKE :keyword OR p.description LIKE :keyword";
+        $stmt = $this->conn->prepare($query);
+        $keyword = '%' . $keyword . '%';
+        $stmt->bindParam(':keyword', $keyword);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    
+    /**
+     * Methods for admin functionality
+     */
+    public function save($name, $description, $price, $image, $categoryId)
+    {
+        return $this->addProduct($name, $description, $price, $categoryId, $image);
+    }
+    
+    public function update($id, $name, $description, $price, $image, $categoryId)
+    {
+        return $this->updateProduct($id, $name, $description, $price, $categoryId, $image);
+    }
+    
+    public function delete($id)
+    {
+        return $this->deleteProduct($id);
+    }
+    
+    public function getById($id)
+    {
+        return $this->getProductById($id);
     }
 }
 ?>

@@ -1,57 +1,67 @@
-<?php
-// filepath: app/views/voucher/list.php
-include 'app/views/shares/header.php'; 
-?>
+<?php include_once 'app/views/shares/header.php'; ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="display-5 fw-bold"><i class="bi bi-ticket-perforated me-2"></i>Quản lý Voucher</h1>
-    <?php if (AuthHelper::isAdmin()): ?>
-        <a href="/webbanhang/Voucher/add" class="btn btn-success btn-lg">
-            <i class="bi bi-plus-circle me-2"></i>Thêm voucher mới
+    <div>
+        <h1 class="display-5 fw-bold"><i class="bi bi-ticket-perforated me-2"></i>Quản lý voucher</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/webbanhang/admin/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item active">Voucher</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center">
+        <a href="/webbanhang/admin/vouchers/create" class="btn btn-success btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Tạo voucher mới
         </a>
-    <?php endif; ?>
+    </div>
 </div>
 
 <?php if (empty($vouchers)): ?>
     <div class="alert alert-info shadow-sm d-flex align-items-center" role="alert">
         <i class="bi bi-info-circle-fill me-2 fs-4"></i>
         <div>
-            <?php if (AuthHelper::isAdmin()): ?>
-                Chưa có voucher nào. Hãy thêm voucher mới!
-            <?php else: ?>
-                Hiện tại chưa có voucher nào.
-            <?php endif; ?>
+            Chưa có voucher nào. Hãy tạo voucher mới!
         </div>
     </div>
 <?php else: ?>
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table id="vouchersTable" class="table table-striped table-hover">
+                <table id="vouchersTable" class="table table-striped table-hover w-100">
                     <thead>
                         <tr>
-                            <th>Mã Voucher</th>
-                            <th>Tên</th>
+                            <th>ID</th>
+                            <th>Mã voucher</th>
+                            <th>Tên voucher</th>
                             <th>Loại giảm giá</th>
                             <th>Giá trị</th>
-                            <th>Áp dụng cho</th>
+                            <th>Đơn tối thiểu</th>
                             <th>Thời gian</th>
                             <th>Trạng thái</th>
                             <th>Sử dụng</th>
-                            <?php if (AuthHelper::isAdmin()): ?>
-                                <th>Thao tác</th>
-                            <?php endif; ?>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($vouchers as $voucher): ?>
                         <tr>
+                            <td class="fw-bold">#<?php echo $voucher->id; ?></td>
                             <td>
                                 <code class="bg-primary text-white px-2 py-1 rounded">
                                     <?php echo htmlspecialchars($voucher->code, ENT_QUOTES, 'UTF-8'); ?>
                                 </code>
                             </td>
-                            <td><?php echo htmlspecialchars($voucher->name, ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td>
+                                <strong><?php echo htmlspecialchars($voucher->name, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                <br>
+                                <small class="text-muted">
+                                    <?php 
+                                        $description = htmlspecialchars($voucher->description ?? '', ENT_QUOTES, 'UTF-8');
+                                        echo strlen($description) > 50 ? substr($description, 0, 50) . '...' : $description;
+                                    ?>
+                                </small>
+                            </td>
                             <td>
                                 <?php if ($voucher->discount_type == 'percentage'): ?>
                                     <span class="badge bg-info">Phần trăm</span>
@@ -65,22 +75,17 @@ include 'app/views/shares/header.php';
                                 <?php else: ?>
                                     <?php echo number_format($voucher->discount_value, 0, ',', '.'); ?> đ
                                 <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($voucher->applies_to == 'all_products'): ?>
-                                    <span class="badge bg-success">Tất cả sản phẩm</span>
-                                <?php elseif ($voucher->applies_to == 'specific_products'): ?>
-                                    <span class="badge bg-primary">Sản phẩm cụ thể</span>
-                                <?php elseif ($voucher->applies_to == 'specific_categories'): ?>
-                                    <span class="badge bg-info">Danh mục cụ thể</span>
-                                <?php else: ?>
-                                    <span class="badge bg-secondary">Không xác định</span>
+                                <?php if ($voucher->max_discount_amount): ?>
+                                    <br><small class="text-muted">Tối đa: <?php echo number_format($voucher->max_discount_amount, 0, ',', '.'); ?> đ</small>
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <?php echo number_format($voucher->min_order_amount, 0, ',', '.'); ?> đ
+                            </td>
+                            <td>
                                 <small>
-                                    <strong>Từ:</strong> <?php echo date('d/m/Y', strtotime($voucher->start_date)); ?><br>
-                                    <strong>Đến:</strong> <?php echo date('d/m/Y', strtotime($voucher->end_date)); ?>
+                                    <strong>Từ:</strong> <?php echo date('d/m/Y H:i', strtotime($voucher->start_date)); ?><br>
+                                    <strong>Đến:</strong> <?php echo date('d/m/Y H:i', strtotime($voucher->end_date)); ?>
                                 </small>
                             </td>
                             <td>
@@ -101,24 +106,23 @@ include 'app/views/shares/header.php';
                                     <?php echo $voucher->used_count; ?>
                                     <?php if ($voucher->usage_limit): ?>
                                         / <?php echo $voucher->usage_limit; ?>
+                                    <?php else: ?>
+                                        / ∞
                                     <?php endif; ?>
                                 </span>
                             </td>
-                            <?php if (AuthHelper::isAdmin()): ?>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="/webbanhang/Voucher/edit/<?php echo $voucher->id; ?>" 
-                                           class="btn btn-sm btn-primary">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a href="/webbanhang/Voucher/delete/<?php echo $voucher->id; ?>" 
-                                           onclick="return confirm('Bạn có chắc chắn muốn xóa voucher này?');" 
-                                           class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            <?php endif; ?>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="/webbanhang/admin/vouchers/edit/<?php echo $voucher->id; ?>" class="btn btn-sm btn-primary me-1" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="/webbanhang/admin/vouchers/delete/<?php echo $voucher->id; ?>" 
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa voucher này?');" 
+                                       class="btn btn-sm btn-danger" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -128,11 +132,18 @@ include 'app/views/shares/header.php';
     </div>
 <?php endif; ?>
 
-<!-- DataTables -->
+<!-- DataTables CSS and JS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+<style>
+.btn-group .btn {
+    border-radius: 4px !important;
+    margin-right: 2px;
+}
+</style>
 
 <script>
 $(document).ready(function() {
@@ -153,11 +164,21 @@ $(document).ready(function() {
         },
         responsive: true,
         columnDefs: [
-            { orderable: false, targets: [<?php echo AuthHelper::isAdmin() ? '8' : '-1'; ?>] }
+            { orderable: false, targets: [9] }, // Disable sorting for action column
+            { width: "5%", targets: 0 },
+            { width: "10%", targets: 1 },
+            { width: "15%", targets: 2 },
+            { width: "8%", targets: 3 },
+            { width: "12%", targets: 4 },
+            { width: "10%", targets: 5 },
+            { width: "15%", targets: 6 },
+            { width: "8%", targets: 7 },
+            { width: "8%", targets: 8 },
+            { width: "9%", targets: 9 }
         ],
-        order: [[5, 'desc']]
+        order: [[0, 'desc']] // Sort by ID desc (newest first)
     });
 });
 </script>
 
-<?php include 'app/views/shares/footer.php'; ?>
+<?php include_once 'app/views/shares/footer.php'; ?> 
