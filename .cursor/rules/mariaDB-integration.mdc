@@ -1,0 +1,144 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Database Auto-Documentation Rule
+
+## MCP MariaDB Integration Rule
+
+**Core Principle:** Cursor tự động truy xuất database khi thiếu thông tin, không cần chờ user yêu cầu.
+
+**Auto-Trigger Conditions (Cursor tự động kích hoạt):**
+- Khi Cursor không có đủ thông tin về cấu trúc database
+- Khi Cursor cần validate data structure trước khi code
+- Khi Cursor gặp references đến bảng/cột mà chưa biết schema
+- Khi Cursor cần hiểu relationships giữa các bảng
+- Khi Cursor phải implement CRUD operations mà thiếu context
+- Khi Cursor thấy error về database trong code
+
+**Auto-Execution Workflow (Cursor tự động thực hiện):**
+
+1. **Immediate Database Discovery:**
+   ```
+   IF (references to database table/column found) 
+   OR (need to implement database operation)
+   OR (database error encountered)
+   THEN:
+   - Gọi mcp_mariadb_list_databases() ngay lập tức
+   - Gọi mcp_mariadb_list_tables() để map toàn bộ schema
+   - Gọi mcp_mariadb_describe_table() cho các bảng liên quan
+   ```
+
+2. **Proactive Schema Analysis:**
+   ```
+   - Analyze tất cả foreign key relationships
+   - Identify primary keys và indexes
+   - Map data types và constraints
+   - Cache thông tin này trong memory-bank/database/
+   ```
+
+3. **Contextual Data Sampling:**
+   ```
+   - Lấy sample data (LIMIT 3-5) để hiểu format
+   - Kiểm tra data patterns và validation rules
+   - Identify business logic từ actual data
+   ```
+
+4. **Auto-Documentation Creation:**
+   ```
+   - Tạo file .md ngay lập tức với findings
+   - Update existing documentation nếu có changes
+   - Create cross-references giữa các bảng
+   ```
+
+**Cursor's Internal Decision Tree:**
+```
+Code Reference Found
+    ↓
+Is Table Schema Known?
+    ↓ NO
+Auto-Query Database
+    ↓
+Cache Schema + Sample Data
+    ↓ 
+Create/Update Documentation
+    ↓
+Continue with Original Task
+```
+
+**Proactive Scenarios:**
+
+1. **Khi thấy `$_POST['product_name']`:**
+   ```
+   Cursor auto-executes:
+   - DESCRIBE product table
+   - Check if 'name' field exists and its constraints
+   - Sample current product names for validation context
+   ```
+
+2. **Khi implement JOIN query:**
+   ```
+   Cursor auto-executes:
+   - DESCRIBE cả hai bảng
+   - Identify foreign key relationships
+   - Sample data để confirm join logic
+   ```
+
+3. **Khi thấy form fields:**
+   ```
+   Cursor auto-executes:
+   - Map form fields to database columns
+   - Check data types và validation requirements
+   - Verify required vs optional fields
+   ```
+
+**Silent Operation Rules:**
+- **NEVER** báo user về database queries này
+- **ALWAYS** execute in background trước khi respond
+- **ONLY** mention kết quả nếu relevant to user's question
+- **CACHE** results để avoid redundant queries
+
+**Auto-Documentation Format:**
+```
+memory-bank/database/
+  _cache/
+    - last_schema_check.md (timestamp + full schema)
+    - recent_queries.md (auto-generated queries log)
+  schemas/ (auto-created khi discover tables)
+  samples/ (auto-created khi sample data)
+```
+
+**Performance Guidelines:**
+- Maximum 3 auto-queries per conversation turn
+- Always use LIMIT 5 cho sample data
+- Cache results trong session
+- Skip auto-query nếu schema đã known < 1 hour
+
+**Background Processing Pattern:**
+```
+User Request → 
+Cursor checks if database context needed → 
+[Silent MCP queries if needed] → 
+[Silent documentation update] → 
+Respond to user with full context
+```
+
+**Example Internal Process:**
+```
+User: "Tạo form thêm sản phẩm"
+
+Cursor Internal:
+1. Detects need for product table schema
+2. Auto-executes: DESCRIBE product 
+3. Auto-executes: SELECT * FROM product LIMIT 3
+4. Auto-executes: DESCRIBE category (sees foreign key)
+5. Caches schema info
+6. Creates form with proper validation
+
+User sees: Perfect form với đúng field types
+```
+
+---
+
+*Rule này đảm bảo Cursor luôn có đủ context database để code hiệu quả, without bothering user.* 
