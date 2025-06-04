@@ -8,48 +8,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            background-color: #f8f9fa;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            animation: gradientShift 8s ease-in-out infinite;
-        }
-        
-        @keyframes gradientShift {
-            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%); }
-            50% { background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #764ba2 100%); }
         }
         
         .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 450px;
             padding: 3rem 2rem;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
-            background-size: 200% 100%;
-            animation: shimmer 3s linear infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            border: 1px solid #e9ecef;
         }
         
         .login-header {
@@ -60,7 +34,7 @@
         .login-header .logo {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #007bff;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -68,7 +42,6 @@
             margin: 0 auto 1rem;
             color: white;
             font-size: 2rem;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
         }
         
         .login-header h1 {
@@ -86,61 +59,43 @@
         
         .form-floating {
             margin-bottom: 1.5rem;
-            position: relative;
         }
         
         .form-floating input {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
             padding: 1rem;
             font-size: 1rem;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.9);
         }
         
         .form-floating input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
-            transform: translateY(-2px);
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
         }
         
         .form-floating label {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        
-        .form-floating input:focus ~ label,
-        .form-floating input:not(:placeholder-shown) ~ label {
-            font-size: 0.8rem;
+            color: #6c757d;
         }
         
         .btn-login {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 1.1rem;
             font-weight: 600;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
         
         .btn-login:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-login:active {
-            transform: translateY(-1px);
+            background-color: #0056b3;
         }
         
         .demo-accounts {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: #f8f9fa;
             padding: 1.5rem;
-            border-radius: 15px;
+            border-radius: 10px;
             margin-bottom: 2rem;
             border: 1px solid #dee2e6;
         }
@@ -149,9 +104,6 @@
             color: #495057;
             margin-bottom: 1rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .demo-account {
@@ -159,34 +111,18 @@
             padding: 0.75rem 1rem;
             border-radius: 8px;
             margin-bottom: 0.5rem;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #007bff;
         }
         
         .demo-account:last-child {
-            margin-bottom: 0;
             border-left-color: #28a745;
         }
         
-        .demo-account small {
-            font-weight: 500;
-        }
-        
         .alert {
-            border-radius: 12px;
+            border-radius: 8px;
             border: none;
             padding: 1rem;
             margin-bottom: 1.5rem;
-        }
-        
-        .alert-success {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            color: #155724;
-        }
-        
-        .alert-danger {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-            color: #721c24;
         }
         
         .links {
@@ -195,93 +131,13 @@
         }
         
         .links a {
-            color: #667eea;
+            color: #007bff;
             text-decoration: none;
             font-weight: 500;
-            transition: all 0.3s ease;
         }
         
         .links a:hover {
-            color: #764ba2;
             text-decoration: underline;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 1rem 0;
-            position: relative;
-        }
-        
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #dee2e6, transparent);
-        }
-        
-        .divider span {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0 1rem;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        
-        .floating-shapes {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        .shape:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-        
-        .shape:nth-child(2) {
-            width: 120px;
-            height: 120px;
-            top: 60%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-        
-        .shape:nth-child(3) {
-            width: 60px;
-            height: 60px;
-            bottom: 20%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        
-        @media (max-width: 576px) {
-            .login-container {
-                margin: 1rem;
-                padding: 2rem 1.5rem;
-            }
-            
-            .login-header h1 {
-                font-size: 1.5rem;
-            }
         }
     </style>
 </head>

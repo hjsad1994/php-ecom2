@@ -18,101 +18,127 @@ require_once 'app/helpers/AuthHelper.php';
             font-family: 'Roboto', sans-serif;
             background-color: #f8f9fa;
         }
+        
         .navbar {
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
         .card {
             transition: transform 0.3s, box-shadow 0.3s;
             border: none;
             border-radius: 10px;
             overflow: hidden;
         }
+        
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        
         .btn {
             border-radius: 5px;
             font-weight: 500;
         }
+        
         .btn-success {
             background-color: #28a745;
             border-color: #28a745;
             box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
         }
+        
         .btn-success:hover {
             background-color: #218838;
             border-color: #1e7e34;
             transform: translateY(-1px);
         }
+        
         .btn-primary {
             box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
         }
+        
         .btn-primary:hover {
             transform: translateY(-1px);
         }
+        
         .btn-danger {
             box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
         }
+        
         .btn-danger:hover {
             transform: translateY(-1px);
         }
+        
         .btn-info {
             box-shadow: 0 4px 6px rgba(23, 162, 184, 0.2);
         }
+        
         .btn-info:hover {
             transform: translateY(-1px);
         }
+        
         h1, h2, h3, h4, h5, h6 {
             font-weight: 700;
             color: #343a40;
         }
+        
         .card-title {
             font-weight: 600;
             color: #212529;
         }
+        
         .card-text {
             color: #6c757d;
         }
+        
         .badge {
             font-weight: 500;
             padding: 5px 10px;
             border-radius: 30px;
         }
+        
         .table thead {
             background-color: #f8f9fa;
         }
+        
         .alert {
             border-radius: 10px;
             border: none;
         }
+        
         .form-control:focus {
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
         }
+        
         .form-select:focus {
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
         }
+        
         .nav-link {
             font-weight: 500;
             white-space: nowrap;
         }
+        
         .nav-link:hover {
             color: #fff !important;
             background-color: rgba(255,255,255,0.1);
             border-radius: 5px;
         }
+        
         .active-nav {
             background-color: rgba(255,255,255,0.2);
             border-radius: 5px;
         }
+        
         .container {
             max-width: 1200px;
         }
+        
         .user-greeting {
             color: rgba(255,255,255,0.9);
             font-weight: 500;
             white-space: nowrap;
         }
+        
         .admin-badge {
             background-color: #ffc107;
             color: #000;
@@ -121,6 +147,7 @@ require_once 'app/helpers/AuthHelper.php';
             font-size: 11px;
             font-weight: 600;
         }
+        
         .user-badge {
             background-color: #17a2b8;
             color: #fff;
@@ -129,36 +156,45 @@ require_once 'app/helpers/AuthHelper.php';
             font-size: 11px;
             font-weight: 600;
         }
+        
         .product-image {
             max-width: 100px;
             height: auto;
         }
+        
         .admin-navbar {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #3498db 75%, #2980b9 100%);
         }
+        
         .user-navbar {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 25%, #3498db 75%, #2980b9 100%);
         }
+        
         .dropdown-menu {
             background-color: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
             border: none;
             box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
+        
         .dropdown-item:hover {
             background-color: rgba(0,0,0,0.05);
         }
+        
         .navbar-nav .nav-item {
             margin: 0 2px;
         }
+        
         .compact-nav .nav-link {
             padding: 0.4rem 0.6rem !important;
             font-size: 0.85rem;
         }
+        
         .navbar-toggler {
             border: none;
             padding: 0.25rem 0.5rem;
         }
+        
         .navbar-toggler:focus {
             box-shadow: none;
         }

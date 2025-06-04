@@ -3,33 +3,33 @@
 <!-- Hero Section -->
 <div class="row mb-5">
     <div class="col-12">
-        <div class="bg-primary text-white rounded-4 p-5 position-relative overflow-hidden">
+        <div class="rounded-4 p-5 position-relative overflow-hidden shadow-sm" style="background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(41, 128, 185, 0.2) 100%); border: 1px solid rgba(52, 152, 219, 0.3);">
             <div class="row align-items-center">
                 <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-4">
+                    <h1 class="display-4 fw-bold mb-4 text-dark">
                         Chào mừng đến với <br>
-                        <span class="text-warning">Cửa Hàng Online</span>
+                        <span class="text-primary">Cửa Hàng Online</span>
                     </h1>
-                    <p class="lead mb-4">
+                    <p class="lead mb-4 text-dark">
                         Khám phá hàng ngàn sản phẩm chất lượng cao với giá cả hợp lý. 
                         Mua sắm dễ dàng, giao hàng nhanh chóng!
                     </p>
                     <div class="d-flex gap-3">
-                        <a href="/webbanhang/user/products" class="btn btn-warning btn-lg">
+                        <a href="/webbanhang/user/products" class="btn btn-primary btn-lg">
                             <i class="bi bi-shop me-2"></i>Mua sắm ngay
                         </a>
-                        <a href="#featured-products" class="btn btn-outline-light btn-lg">
+                        <a href="#featured-products" class="btn btn-outline-primary btn-lg">
                             <i class="bi bi-arrow-down me-2"></i>Khám phá
                         </a>
                     </div>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <i class="bi bi-cart-check display-1 opacity-75"></i>
+                    <i class="bi bi-cart-check display-1 text-primary opacity-75"></i>
                 </div>
             </div>
             <!-- Background decoration -->
             <div class="position-absolute top-0 end-0 opacity-25">
-                <i class="bi bi-bag-fill" style="font-size: 15rem; transform: rotate(15deg);"></i>
+                <i class="bi bi-bag-fill text-primary" style="font-size: 15rem; transform: rotate(15deg);"></i>
             </div>
         </div>
     </div>
@@ -201,23 +201,31 @@
 <!-- Stats Section -->
 <div class="row mb-5">
     <div class="col-12">
-        <div class="bg-light rounded-4 p-5">
+        <div class="rounded-4 p-5 shadow-sm" style="background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, rgba(41, 128, 185, 0.15) 100%); border: 1px solid rgba(52, 152, 219, 0.3);">
             <div class="row text-center">
                 <div class="col-md-3 mb-4">
-                    <h2 class="display-4 fw-bold text-primary">1000+</h2>
-                    <p class="text-muted">Sản phẩm</p>
+                    <div class="p-3 rounded-3" style="background: rgba(52, 152, 219, 0.2);">
+                        <h2 class="display-4 fw-bold text-primary">1000+</h2>
+                        <p class="text-dark fw-semibold mb-0">Sản phẩm</p>
+                    </div>
                 </div>
                 <div class="col-md-3 mb-4">
-                    <h2 class="display-4 fw-bold text-success">5000+</h2>
-                    <p class="text-muted">Khách hàng hài lòng</p>
+                    <div class="p-3 rounded-3" style="background: rgba(40, 167, 69, 0.2);">
+                        <h2 class="display-4 fw-bold text-success">5000+</h2>
+                        <p class="text-dark fw-semibold mb-0">Khách hàng hài lòng</p>
+                    </div>
                 </div>
                 <div class="col-md-3 mb-4">
-                    <h2 class="display-4 fw-bold text-warning">99%</h2>
-                    <p class="text-muted">Đánh giá tích cực</p>
+                    <div class="p-3 rounded-3" style="background: rgba(255, 193, 7, 0.2);">
+                        <h2 class="display-4 fw-bold text-warning">99%</h2>
+                        <p class="text-dark fw-semibold mb-0">Đánh giá tích cực</p>
+                    </div>
                 </div>
                 <div class="col-md-3 mb-4">
-                    <h2 class="display-4 fw-bold text-info">24/7</h2>
-                    <p class="text-muted">Hỗ trợ khách hàng</p>
+                    <div class="p-3 rounded-3" style="background: rgba(52, 152, 219, 0.2);">
+                        <h2 class="display-4 fw-bold text-info">24/7</h2>
+                        <p class="text-dark fw-semibold mb-0">Hỗ trợ khách hàng</p>
+                    </div>
                 </div>
             </div>
         </div>
