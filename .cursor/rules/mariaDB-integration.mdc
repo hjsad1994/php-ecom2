@@ -3,12 +3,15 @@ description:
 globs: 
 alwaysApply: false
 ---
-
 # Database Auto-Documentation Rule
 
 ## MCP MariaDB Integration Rule
 
 **Core Principle:** The cursor automatically retrieves the database when information is missing, without waiting for user requests.
+
+**Database Configuration:**
+- **Database Name**: `my_store` (default database for all operations)
+- **Tables**: product, category, account, orders, order_details, vouchers, users
 
 **Auto-Trigger Conditions (Cursor auto-activation):**
 - When the cursor lacks enough information about the database structure
@@ -26,14 +29,14 @@ alwaysApply: false
    OR (need to implement database operation)
    OR (database error encountered)
    THEN:
-   - Call mcp_mariadb_list_databases() immediately
-   - Call mcp_mariadb_list_tables() to map the entire schema
-   - Call mcp_mariadb_describe_table() for related tables
+   - Call mcp_mariadb_list_tables(database="my_store") immediately
+   - Call mcp_mariadb_describe_table(database="my_store", table=<table_name>) for related tables
+   - Use my_store as default database for all operations
    ```
 
 2. **Proactive Schema Analysis:**
    ```
-   - Analyze all foreign key relationships
+   - Analyze all foreign key relationships in my_store database
    - Identify primary keys and indexes
    - Map data types and constraints
    - Cache this information in memory-bank/database/
@@ -41,7 +44,7 @@ alwaysApply: false
 
 3. **Contextual Data Sampling:**
    ```
-   - Fetch sample data (LIMIT 3-5) to understand format
+   - Fetch sample data (LIMIT 3-5) from my_store tables to understand format
    - Check data patterns and validation rules
    - Identify business logic from actual data
    ```
@@ -59,7 +62,7 @@ Code Reference Found
     ↓
 Is Table Schema Known?
     ↓ NO
-Auto-Query Database
+Auto-Query my_store Database
     ↓
 Cache Schema + Sample Data
     ↓ 
@@ -68,12 +71,18 @@ Create/Update Documentation
 Continue with Original Task
 ```
 
+**Database-Specific Operations:**
+All MCP mariadb calls should default to database="my_store":
+- `mcp_mariadb_list_tables(database="my_store")`
+- `mcp_mariadb_describe_table(database="my_store", table="product")`
+- `mcp_mariadb_execute_query(database="my_store", query="SELECT ...")`
+
 **Proactive Scenarios:**
 
 1. **When seeing `$_POST['product_name']`:**
    ```
    Cursor auto-executes:
-   - DESCRIBE product table
+   - DESCRIBE product table in my_store
    - Check if 'name' field exists and its constraints
    - Sample current product names for validation context
    ```
@@ -81,7 +90,7 @@ Continue with Original Task
 2. **When implementing a JOIN query:**
    ```
    Cursor auto-executes:
-   - DESCRIBE both tables
+   - DESCRIBE both tables in my_store
    - Identify foreign key relationships
    - Sample data to confirm join logic
    ```
@@ -89,7 +98,7 @@ Continue with Original Task
 3. **When seeing form fields:**
    ```
    Cursor auto-executes:
-   - Map form fields to database columns
+   - Map form fields to my_store database columns
    - Check data types and validation requirements
    - Verify required vs optional fields
    ```
@@ -99,15 +108,16 @@ Continue with Original Task
 - **ALWAYS** execute in the background before responding
 - **ONLY** mention the result if relevant to the user's question
 - **CACHE** results to avoid redundant queries
+- **DEFAULT** to my_store database for all operations
 
 **Auto-Documentation Format:**
 ```
 memory-bank/database/
   _cache/
-    - last_schema_check.md (timestamp + full schema)
+    - last_schema_check.md (timestamp + full my_store schema)
     - recent_queries.md (auto-generated queries log)
-  schemas/ (auto-created when discovering tables)
-  samples/ (auto-created when sampling data)
+  schemas/ (auto-created when discovering my_store tables)
+  samples/ (auto-created when sampling my_store data)
 ```
 
 **Performance Guidelines:**
@@ -115,12 +125,13 @@ memory-bank/database/
 - Always use LIMIT 5 for sample data
 - Cache results within the session
 - Skip auto-query if the schema has been known for less than 1 hour
+- Always specify database="my_store" in MCP calls
 
 **Background Processing Pattern:**
 ```
 User Request → 
-Cursor checks if database context is needed → 
-[Silent MCP queries if needed] → 
+Cursor checks if my_store database context is needed → 
+[Silent MCP queries to my_store if needed] → 
 [Silent documentation update] → 
 Respond to the user with full context
 ```
@@ -131,11 +142,11 @@ User: "Create a product addition form"
 
 Cursor Internal:
 1. Detects need for product table schema
-2. Auto-executes: DESCRIBE product 
-3. Auto-executes: SELECT * FROM product LIMIT 3
-4. Auto-executes: DESCRIBE category (sees foreign key)
+2. Auto-executes: DESCRIBE product in my_store
+3. Auto-executes: SELECT * FROM product LIMIT 3 (my_store)
+4. Auto-executes: DESCRIBE category (sees foreign key) (my_store)
 5. Caches schema info
 6. Creates form with proper validation
 
 User sees: Perfect form with the correct field types
-```
+``` 
