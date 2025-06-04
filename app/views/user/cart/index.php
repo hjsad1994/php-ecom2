@@ -133,31 +133,6 @@
                     <?php endforeach; ?>
                 </div>
             </div>
-            
-            <!-- Recommended Products -->
-            <div class="card shadow-sm mt-4">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">
-                        <i class="bi bi-lightbulb me-2"></i>Có thể bạn quan tâm
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <div class="card border-0">
-                                <img src="/webbanhang/public/images/no-image.jpg" class="card-img-top" style="height: 120px; object-fit: cover;">
-                                <div class="card-body p-2 text-center">
-                                    <h6 class="card-title small">Sản phẩm gợi ý 1</h6>
-                                    <p class="text-primary fw-bold mb-1">300.000 đ</p>
-                                    <button class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- Order Summary -->

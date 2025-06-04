@@ -1,23 +1,24 @@
 ---
 description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
+
 # Database Auto-Documentation Rule
 
 ## MCP MariaDB Integration Rule
 
-**Core Principle:** Cursor tự động truy xuất database khi thiếu thông tin, không cần chờ user yêu cầu.
+**Core Principle:** The cursor automatically retrieves the database when information is missing, without waiting for user requests.
 
-**Auto-Trigger Conditions (Cursor tự động kích hoạt):**
-- Khi Cursor không có đủ thông tin về cấu trúc database
-- Khi Cursor cần validate data structure trước khi code
-- Khi Cursor gặp references đến bảng/cột mà chưa biết schema
-- Khi Cursor cần hiểu relationships giữa các bảng
-- Khi Cursor phải implement CRUD operations mà thiếu context
-- Khi Cursor thấy error về database trong code
+**Auto-Trigger Conditions (Cursor auto-activation):**
+- When the cursor lacks enough information about the database structure
+- When the cursor needs to validate the data structure before coding
+- When the cursor encounters references to tables/columns that lack a known schema
+- When the cursor needs to understand relationships between tables
+- When the cursor has to implement CRUD operations but lacks context
+- When the cursor detects database errors in the code
 
-**Auto-Execution Workflow (Cursor tự động thực hiện):**
+**Auto-Execution Workflow (Cursor auto-execution):**
 
 1. **Immediate Database Discovery:**
    ```
@@ -25,31 +26,31 @@ alwaysApply: true
    OR (need to implement database operation)
    OR (database error encountered)
    THEN:
-   - Gọi mcp_mariadb_list_databases() ngay lập tức
-   - Gọi mcp_mariadb_list_tables() để map toàn bộ schema
-   - Gọi mcp_mariadb_describe_table() cho các bảng liên quan
+   - Call mcp_mariadb_list_databases() immediately
+   - Call mcp_mariadb_list_tables() to map the entire schema
+   - Call mcp_mariadb_describe_table() for related tables
    ```
 
 2. **Proactive Schema Analysis:**
    ```
-   - Analyze tất cả foreign key relationships
-   - Identify primary keys và indexes
-   - Map data types và constraints
-   - Cache thông tin này trong memory-bank/database/
+   - Analyze all foreign key relationships
+   - Identify primary keys and indexes
+   - Map data types and constraints
+   - Cache this information in memory-bank/database/
    ```
 
 3. **Contextual Data Sampling:**
    ```
-   - Lấy sample data (LIMIT 3-5) để hiểu format
-   - Kiểm tra data patterns và validation rules
-   - Identify business logic từ actual data
+   - Fetch sample data (LIMIT 3-5) to understand format
+   - Check data patterns and validation rules
+   - Identify business logic from actual data
    ```
 
 4. **Auto-Documentation Creation:**
    ```
-   - Tạo file .md ngay lập tức với findings
-   - Update existing documentation nếu có changes
-   - Create cross-references giữa các bảng
+   - Create .md file immediately with findings
+   - Update existing documentation if there are changes
+   - Create cross-references between tables
    ```
 
 **Cursor's Internal Decision Tree:**
@@ -69,7 +70,7 @@ Continue with Original Task
 
 **Proactive Scenarios:**
 
-1. **Khi thấy `$_POST['product_name']`:**
+1. **When seeing `$_POST['product_name']`:**
    ```
    Cursor auto-executes:
    - DESCRIBE product table
@@ -77,27 +78,27 @@ Continue with Original Task
    - Sample current product names for validation context
    ```
 
-2. **Khi implement JOIN query:**
+2. **When implementing a JOIN query:**
    ```
    Cursor auto-executes:
-   - DESCRIBE cả hai bảng
+   - DESCRIBE both tables
    - Identify foreign key relationships
-   - Sample data để confirm join logic
+   - Sample data to confirm join logic
    ```
 
-3. **Khi thấy form fields:**
+3. **When seeing form fields:**
    ```
    Cursor auto-executes:
    - Map form fields to database columns
-   - Check data types và validation requirements
+   - Check data types and validation requirements
    - Verify required vs optional fields
    ```
 
 **Silent Operation Rules:**
-- **NEVER** báo user về database queries này
-- **ALWAYS** execute in background trước khi respond
-- **ONLY** mention kết quả nếu relevant to user's question
-- **CACHE** results để avoid redundant queries
+- **NEVER** inform the user about these database queries
+- **ALWAYS** execute in the background before responding
+- **ONLY** mention the result if relevant to the user's question
+- **CACHE** results to avoid redundant queries
 
 **Auto-Documentation Format:**
 ```
@@ -105,28 +106,28 @@ memory-bank/database/
   _cache/
     - last_schema_check.md (timestamp + full schema)
     - recent_queries.md (auto-generated queries log)
-  schemas/ (auto-created khi discover tables)
-  samples/ (auto-created khi sample data)
+  schemas/ (auto-created when discovering tables)
+  samples/ (auto-created when sampling data)
 ```
 
 **Performance Guidelines:**
 - Maximum 3 auto-queries per conversation turn
-- Always use LIMIT 5 cho sample data
-- Cache results trong session
-- Skip auto-query nếu schema đã known < 1 hour
+- Always use LIMIT 5 for sample data
+- Cache results within the session
+- Skip auto-query if the schema has been known for less than 1 hour
 
 **Background Processing Pattern:**
 ```
 User Request → 
-Cursor checks if database context needed → 
+Cursor checks if database context is needed → 
 [Silent MCP queries if needed] → 
 [Silent documentation update] → 
-Respond to user with full context
+Respond to the user with full context
 ```
 
 **Example Internal Process:**
 ```
-User: "Tạo form thêm sản phẩm"
+User: "Create a product addition form"
 
 Cursor Internal:
 1. Detects need for product table schema
@@ -136,9 +137,5 @@ Cursor Internal:
 5. Caches schema info
 6. Creates form with proper validation
 
-User sees: Perfect form với đúng field types
+User sees: Perfect form with the correct field types
 ```
-
----
-
-*Rule này đảm bảo Cursor luôn có đủ context database để code hiệu quả, without bothering user.* 
