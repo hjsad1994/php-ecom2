@@ -372,5 +372,73 @@ class VoucherModel
     {
         return $this->updateVoucher($voucherId, $data);
     }
+    
+    /**
+     * Lấy thống kê tổng quan voucher
+     */
+    public function getVoucherStats()
+    {
+        $sql = "SELECT 
+                    COUNT(*) as total_vouchers,
+                    SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_vouchers,
+                    SUM(CASE WHEN NOW() BETWEEN start_date AND end_date AND is_active = 1 THEN 1 ELSE 0 END) as valid_vouchers,
+                    SUM(CASE WHEN NOW() > end_date THEN 1 ELSE 0 END) as expired_vouchers,
+                    SUM(used_count) as total_usage,
+                    AVG(discount_value) as avg_discount
+                FROM vouchers";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+    
+    /**
+     * Lấy thống kê theo loại discount
+     */
+    public function getDiscountTypeStats()
+    {
+        $sql = "SELECT 
+                    discount_type,
+                    COUNT(*) as count,
+                    AVG(discount_value) as avg_value,
+                    SUM(used_count) as total_usage
+                FROM vouchers 
+                GROUP BY discount_type
+                ORDER BY count DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    
+    /**
+     * Lấy voucher được sử dụng nhiều nhất
+     */
+    public function getTopUsedVouchers($limit = 5)
+    {
+        $sql = "SELECT code, name, used_count, usage_limit, discount_type, discount_value
+                FROM vouchers 
+                WHERE used_count > 0
+                ORDER BY used_count DESC 
+                LIMIT :limit";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+    
+    /**
+     * Lấy voucher sắp hết hạn
+     */
+    public function getExpiringSoonVouchers($days = 7)
+    {
+        $sql = "SELECT code, name, end_date, is_active, used_count, usage_limit
+                FROM vouchers 
+                WHERE end_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL :days DAY)
+                AND is_active = 1
+                ORDER BY end_date ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':days', $days, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 }
 ?>

@@ -62,48 +62,51 @@ include_once 'app/views/shares/header.php'; ?>
 
                     <!-- Products List -->
                     <h6 class="fw-bold text-primary mb-3">Sản phẩm đã đặt</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th class="text-center">Số lượng</th>
-                                    <th class="text-end">Đơn giá</th>
-                                    <th class="text-end">Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (isset($order['items']) && !empty($order['items'])): ?>
-                                    <?php foreach ($order['items'] as $item): ?>
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <?php 
-                                                    $imagePath = !empty($item['image']) ? '/webbanhang/public/uploads/products/' . $item['image'] : '/webbanhang/public/images/no-image.jpg';
-                                                    ?>
-                                                    <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" 
-                                                         class="me-3 rounded" style="width: 50px; height: 50px; object-fit: cover;">
-                                                    <div>
-                                                        <h6 class="mb-0"><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></h6>
-                                                        <small class="text-muted">SKU: <?php echo $item['product_id']; ?></small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-center"><?php echo $item['quantity']; ?></td>
-                                            <td class="text-end"><?php echo number_format($item['price'], 0, ',', '.'); ?> đ</td>
-                                            <td class="text-end fw-bold"><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?> đ</td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                            <tfoot class="table-light">
-                                <tr>
-                                    <th colspan="3" class="text-end">Tổng cộng:</th>
-                                    <th class="text-end text-success"><?php echo number_format($order['total_amount'], 0, ',', '.'); ?> đ</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                    <?php if (isset($order['items']) && !empty($order['items'])): ?>
+                        <?php foreach ($order['items'] as $item): ?>
+                            <div class="border rounded p-3 mb-2 bg-light">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center">
+                                            <?php 
+                                            $imagePath = !empty($item['image']) ? '/webbanhang/public/uploads/products/' . $item['image'] : '/webbanhang/public/images/no-image.jpg';
+                                            ?>
+                                            <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($item['product_name'], ENT_QUOTES, 'UTF-8'); ?>" 
+                                                 class="me-3 rounded" style="width: 72px; height: 72px; object-fit: cover; flex-shrink: 0;">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0"><?php echo htmlspecialchars($item['product_name'], ENT_QUOTES, 'UTF-8'); ?></h6>
+                                                <small class="text-muted">SKU: <?php echo $item['product_id']; ?></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="row text-center text-md-end">
+                                            <div class="col-6 col-md-12">
+                                                <small class="text-muted d-block">Đơn giá</small>
+                                                <span><?php echo number_format($item['price'], 0, ',', '.'); ?> đ</span>
+                                            </div>
+                                            <div class="col-6 col-md-12">
+                                                <small class="text-muted d-block">Thành tiền</small>
+                                                <span class="fw-bold text-primary"><?php echo number_format($item['price'] * $item['quantity'], 0, ',', '.'); ?> đ</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        
+                        <!-- Total Summary -->
+                        <div class="border-top pt-3 mt-3">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-0">Tổng cộng:</h6>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <h5 class="mb-0 text-success fw-bold"><?php echo number_format($order['total_amount'], 0, ',', '.'); ?> đ</h5>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Voucher Info -->
                     <?php if (!empty($order['voucher_code'])): ?>

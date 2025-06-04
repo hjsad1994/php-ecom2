@@ -69,10 +69,24 @@ class AdminController {
     // ========== PRODUCT MANAGEMENT ==========
     
     /**
-     * Danh sách sản phẩm
+     * Danh sách sản phẩm với thống kê chi tiết
      */
     public function products() {
+        // Lấy danh sách sản phẩm
         $products = $this->productModel->getAllWithCategory();
+        
+        // Lấy thống kê tổng quan
+        $stats = [
+            'total_products' => $this->productModel->getProductCount(),
+            'total_categories' => $this->categoryModel->getCategoryCount(),
+            'price_range' => $this->productModel->getPriceRange(),
+            'category_stats' => $this->productModel->getProductStatsByCategory(),
+            'latest_products' => $this->productModel->getLatestProducts(3)
+        ];
+        
+        // Lấy tất cả danh mục cho filter
+        $categories = $this->categoryModel->getAll();
+        
         include_once 'app/views/admin/products/index.php';
     }
     
@@ -403,10 +417,20 @@ class AdminController {
     // ========== VOUCHER MANAGEMENT ==========
     
     /**
-     * Danh sách voucher
+     * Danh sách voucher với thống kê chi tiết
      */
     public function vouchers() {
+        // Lấy danh sách vouchers
         $vouchers = $this->voucherModel->getAll();
+        
+        // Lấy thống kê tổng quan
+        $stats = [
+            'voucher_stats' => $this->voucherModel->getVoucherStats(),
+            'discount_types' => $this->voucherModel->getDiscountTypeStats(),
+            'top_used' => $this->voucherModel->getTopUsedVouchers(3),
+            'expiring_soon' => $this->voucherModel->getExpiringSoonVouchers(7)
+        ];
+        
         include_once 'app/views/admin/vouchers/index.php';
     }
     

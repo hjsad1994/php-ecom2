@@ -11,6 +11,19 @@ $url = rtrim($url, '/');
 $url = filter_var($url, FILTER_SANITIZE_URL);
 $url = explode('/', $url);
 
+// Handle API routes first
+if (isset($url[0]) && $url[0] === 'api') {
+    switch ($url[1] ?? '') {
+        case 'validate-voucher':
+            include 'api_validate_voucher.php';
+            exit;
+        default:
+            http_response_code(404);
+            echo json_encode(['error' => 'API endpoint not found']);
+            exit;
+    }
+}
+
 // Handle empty URL (homepage)
 if (empty($url[0])) {
     $controllerName = 'HomeController';

@@ -216,7 +216,7 @@
                         <!-- Action Buttons -->
                         <div class="d-grid gap-2">
                             <button class="btn btn-primary btn-lg" onclick="proceedToCheckout()">
-                                <i class="bi bi-credit-card me-2"></i>Thanh toán
+                                <i class="bi bi-bag-check me-2"></i>Đặt hàng
                             </button>
                             <button class="btn btn-outline-secondary" onclick="saveForLater()">
                                 <i class="bi bi-bookmark me-2"></i>Lưu giỏ hàng

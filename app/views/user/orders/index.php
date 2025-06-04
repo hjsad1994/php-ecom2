@@ -206,10 +206,6 @@
                                             <i class="bi bi-x-circle me-1"></i>Hủy đơn hàng
                                         </button>
                                     <?php elseif ($order->order_status === 'paid'): ?>
-                                        <button class="btn btn-outline-info btn-sm" onclick="trackOrder(<?php echo $order->id; ?>)">
-                                            <i class="bi bi-truck me-1"></i>Theo dõi đơn hàng
-                                        </button>
-                                    <?php elseif ($order->order_status === 'completed'): ?>
                                         <button class="btn btn-outline-warning btn-sm" onclick="rateOrder(<?php echo $order->id; ?>)">
                                             <i class="bi bi-star me-1"></i>Đánh giá
                                         </button>
@@ -373,12 +369,8 @@ function cancelOrder(orderId) {
     }
 }
 
-function trackOrder(orderId) {
-    window.location.href = `/webbanhang/user/orders/track/${orderId}`;
-}
-
 function rateOrder(orderId) {
-    window.location.href = `/webbanhang/user/orders/rate/${orderId}`;
+    alert('Tính năng đánh giá đang được phát triển');
 }
 
 function reorder(orderId) {

@@ -165,18 +165,26 @@ class ProductModel
     }
     
     /**
-     * Tìm kiếm sản phẩm
+     * Tìm kiếm sản phẩm với khả năng lọc theo danh mục
      */
-    public function searchProducts($keyword)
+    public function searchProducts($keyword, $categoryId = null)
     {
-        $query = "SELECT p.id, p.name, p.description, p.price, p.image, c.name as category_name
-                  FROM " . $this->table_name . " p
-                  LEFT JOIN category c ON p.category_id = c.id
-                  WHERE p.name LIKE :keyword OR p.description LIKE :keyword";
-        $stmt = $this->conn->prepare($query);
-        $keyword = '%' . $keyword . '%';
-        $stmt->bindParam(':keyword', $keyword);
-        $stmt->execute();
+        $sql = "SELECT p.*, c.name as category_name 
+                FROM product p 
+                LEFT JOIN category c ON p.category_id = c.id 
+                WHERE p.name LIKE :keyword OR p.description LIKE :keyword";
+        
+        $params = [':keyword' => "%$keyword%"];
+        
+        if ($categoryId) {
+            $sql .= " AND p.category_id = :category_id";
+            $params[':category_id'] = $categoryId;
+        }
+        
+        $sql .= " ORDER BY p.id DESC";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
     
@@ -236,6 +244,62 @@ class ProductModel
         $stmt = $this->conn->prepare($query);
         $stmt->execute($productIds);
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    /**
+     * Lấy thống kê sản phẩm theo danh mục
+     */
+    public function getProductStatsByCategory()
+    {
+        $sql = "SELECT 
+                    c.id, 
+                    c.name as category_name,
+                    COUNT(p.id) as product_count,
+                    AVG(p.price) as avg_price,
+                    MIN(p.price) as min_price,
+                    MAX(p.price) as max_price,
+                    SUM(CASE WHEN p.image IS NOT NULL AND p.image != '' THEN 1 ELSE 0 END) as products_with_image
+                FROM category c 
+                LEFT JOIN product p ON c.id = p.category_id 
+                GROUP BY c.id, c.name
+                ORDER BY product_count DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * Lấy sản phẩm mới nhất
+     */
+    public function getLatestProducts($limit = 5)
+    {
+        $sql = "SELECT p.*, c.name as category_name 
+                FROM product p 
+                LEFT JOIN category c ON p.category_id = c.id 
+                ORDER BY p.id DESC 
+                LIMIT :limit";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    /**
+     * Lấy sản phẩm có giá cao nhất và thấp nhất
+     */
+    public function getPriceRange()
+    {
+        $sql = "SELECT 
+                    MIN(price) as min_price,
+                    MAX(price) as max_price,
+                    AVG(price) as avg_price,
+                    COUNT(*) as total_products,
+                    SUM(CASE WHEN image IS NOT NULL AND image != '' THEN 1 ELSE 0 END) as products_with_image,
+                    SUM(CASE WHEN image IS NULL OR image = '' THEN 1 ELSE 0 END) as products_without_image
+                FROM product";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
     }
 }
 ?>

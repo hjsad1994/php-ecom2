@@ -1,6 +1,7 @@
 <?php
 require_once('app/config/database.php');
 require_once('app/models/OrderModel.php');
+require_once('app/models/ProductModel.php');
 require_once('app/helpers/AuthHelper.php');
 require_once('app/helpers/SessionHelper.php');
 
@@ -96,11 +97,28 @@ class OrderController {
                     ]);
                 }
                 
+                // Cập nhật số lần sử dụng voucher nếu có
+                if ($voucherId) {
+                    $result = $this->orderModel->incrementVoucherUsage($voucherId);
+                    if (!$result) {
+                        error_log("Failed to increment voucher usage for voucher ID: " . $voucherId);
+                    }
+                }
+                
+                // Clear applied voucher from session after successful order
+                if (isset($_SESSION['applied_voucher'])) {
+                    unset($_SESSION['applied_voucher']);
+                }
+                
+                // Clear cart after successful order
+                $_SESSION['cart'] = [];
+                
                 // Redirect đến trang xác nhận
                 header("Location: /webbanhang/order/confirm/$orderId");
                 exit;
                 
             } catch (Exception $e) {
+                error_log("Order creation error: " . $e->getMessage());
                 $errors['order'] = "Lỗi khi tạo đơn hàng: " . $e->getMessage();
                 include_once 'app/views/user/orders/create.php';
             }

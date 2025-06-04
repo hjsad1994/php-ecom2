@@ -3,13 +3,13 @@
 <div class="row mb-4">
     <div class="col-md-8">
         <h1 class="display-6 fw-bold text-primary">
-            <i class="bi bi-credit-card me-2"></i>Thanh toán
+            <i class="bi bi-bag-check me-2"></i>Đặt hàng
         </h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/webbanhang/" class="text-decoration-none">Trang chủ</a></li>
                 <li class="breadcrumb-item"><a href="/webbanhang/user/cart" class="text-decoration-none">Giỏ hàng</a></li>
-                <li class="breadcrumb-item active">Thanh toán</li>
+                <li class="breadcrumb-item active">Đặt hàng</li>
             </ol>
         </nav>
     </div>
@@ -81,57 +81,6 @@
                 </div>
             </div>
 
-            <!-- Payment Method -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-credit-card me-2"></i>Phương thức thanh toán
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" checked>
-                                <label class="form-check-label" for="cod">
-                                    <strong>Thanh toán khi nhận hàng (COD)</strong>
-                                    <br><small class="text-muted">Thanh toán bằng tiền mặt khi nhận hàng</small>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
-                                <label class="form-check-label" for="bank_transfer">
-                                    <strong>Chuyển khoản ngân hàng</strong>
-                                    <br><small class="text-muted">Chuyển khoản trước khi giao hàng</small>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="payment_method" id="momo" value="momo">
-                                <label class="form-check-label" for="momo">
-                                    <strong>Ví MoMo</strong>
-                                    <br><small class="text-muted">Thanh toán qua ví điện tử MoMo</small>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="payment_method" id="vnpay" value="vnpay">
-                                <label class="form-check-label" for="vnpay">
-                                    <strong>VNPay</strong>
-                                    <br><small class="text-muted">Thẻ ATM, Visa, Mastercard</small>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Shipping Method -->
             <div class="card shadow-sm">
                 <div class="card-header bg-info text-white">
@@ -163,6 +112,44 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Voucher Code Section (only show if no voucher applied) -->
+            <?php if (!$appliedVoucher): ?>
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-tag me-2"></i>Mã giảm giá
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Bạn có thể áp dụng mã giảm giá trong giỏ hàng trước khi thanh toán.
+                        <a href="/webbanhang/user/cart" class="alert-link">Quay lại giỏ hàng</a>
+                    </div>
+                </div>
+            </div>
+            <?php else: ?>
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>Mã giảm giá đã áp dụng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1"><?php echo htmlspecialchars($appliedVoucher['code'], ENT_QUOTES, 'UTF-8'); ?></h6>
+                            <small class="text-muted"><?php echo htmlspecialchars($appliedVoucher['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></small>
+                        </div>
+                        <div class="text-end">
+                            <div class="h6 text-success mb-0">-<?php echo number_format($appliedVoucher['discount'], 0, ',', '.'); ?> đ</div>
+                            <a href="/webbanhang/user/cart" class="btn btn-sm btn-outline-secondary">Thay đổi</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Order Summary -->
@@ -200,20 +187,23 @@
                             <?php endforeach; ?>
                         </div>
 
-                        <!-- Voucher Code -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Mã giảm giá</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="voucher_code" placeholder="Nhập mã giảm giá">
-                                <button class="btn btn-outline-secondary" type="button">Áp dụng</button>
-                            </div>
-                        </div>
-
                         <!-- Order Summary -->
                         <div class="border-top pt-3">
+                            <?php 
+                            $originalTotal = $subtotal;
+                            $discountAmount = 0;
+                            $finalTotal = $subtotal;
+                            $appliedVoucher = $_SESSION['applied_voucher'] ?? null;
+                            
+                            if ($appliedVoucher) {
+                                $discountAmount = $appliedVoucher['discount'];
+                                $finalTotal = $appliedVoucher['final_total'];
+                            }
+                            ?>
+                            
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Tạm tính:</span>
-                                <span><?php echo number_format($subtotal, 0, ',', '.'); ?> đ</span>
+                                <span><?php echo number_format($originalTotal, 0, ',', '.'); ?> đ</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Phí vận chuyển:</span>
@@ -221,13 +211,25 @@
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Giảm giá:</span>
-                                <span class="text-danger">-0 đ</span>
+                                <span class="text-danger" id="discountAmount">
+                                    <?php if ($appliedVoucher): ?>
+                                        -<?php echo number_format($discountAmount, 0, ',', '.'); ?> đ
+                                        <small class="d-block text-muted">(<?php echo htmlspecialchars($appliedVoucher['code'], ENT_QUOTES, 'UTF-8'); ?>)</small>
+                                    <?php else: ?>
+                                        -0 đ
+                                    <?php endif; ?>
+                                </span>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between mb-3">
                                 <span class="h6 fw-bold">Tổng cộng:</span>
-                                <span class="h5 fw-bold text-primary" id="totalAmount"><?php echo number_format($subtotal, 0, ',', '.'); ?> đ</span>
+                                <span class="h5 fw-bold text-primary" id="totalAmount"><?php echo number_format($finalTotal, 0, ',', '.'); ?> đ</span>
                             </div>
+
+                            <!-- Hidden input for voucher if applied -->
+                            <?php if ($appliedVoucher): ?>
+                                <input type="hidden" name="voucher_code" value="<?php echo htmlspecialchars($appliedVoucher['code'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php endif; ?>
 
                             <!-- Order Button -->
                             <div class="d-grid">
@@ -292,7 +294,8 @@ document.querySelectorAll('input[name="shipping_method"]').forEach(radio => {
     radio.addEventListener('change', function() {
         const shippingFeeEl = document.getElementById('shippingFee');
         const totalAmountEl = document.getElementById('totalAmount');
-        const subtotal = <?php echo $subtotal; ?>;
+        const subtotal = <?php echo $originalTotal; ?>;
+        const discount = <?php echo $discountAmount; ?>;
         let shippingFee = 0;
         
         switch(this.value) {
@@ -313,13 +316,26 @@ document.querySelectorAll('input[name="shipping_method"]').forEach(radio => {
                 break;
         }
         
-        const total = subtotal + shippingFee;
+        const total = subtotal - discount + shippingFee;
         totalAmountEl.textContent = total.toLocaleString('vi-VN') + ' đ';
     });
 });
 
 // Form validation
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    console.log('=== CHECKOUT FORM SUBMIT DEBUG ===');
+    
+    // Debug form data
+    const formData = new FormData(this);
+    console.log('Form data:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+    }
+    
+    // Specifically check voucher code
+    const voucherCode = this.querySelector('input[name="voucher_code"]').value;
+    console.log('Voucher code: "' + voucherCode + '"');
+    
     const requiredFields = this.querySelectorAll('input[required], select[required], textarea[required]');
     let hasError = false;
     
@@ -342,6 +358,8 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     const submitBtn = this.querySelector('button[type="submit"]');
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
     submitBtn.disabled = true;
+    
+    console.log('Form submission proceeding...');
 });
 
 // Phone number formatting
