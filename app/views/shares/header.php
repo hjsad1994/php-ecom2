@@ -246,6 +246,11 @@ require_once 'app/helpers/AuthHelper.php';
                                 <i class="bi bi-list-check me-1"></i>Đơn hàng
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/webbanhang/admin/accounts">
+                                <i class="bi bi-people me-1"></i>Tài khoản
+                            </a>
+                        </li>
                         
                     <?php elseif (AuthHelper::isUser()): ?>
                         <!-- USER MENU - Shopping Functions -->

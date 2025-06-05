@@ -4,6 +4,7 @@ require_once('app/models/ProductModel.php');
 require_once('app/models/CategoryModel.php');
 require_once('app/models/VoucherModel.php');
 require_once('app/models/OrderModel.php');
+require_once('app/models/AccountModel.php');
 require_once('app/helpers/AuthHelper.php');
 
 class AdminController {
@@ -12,6 +13,7 @@ class AdminController {
     private $categoryModel;
     private $voucherModel;
     private $orderModel;
+    private $accountModel;
     
     public function __construct() {
         // Kiểm tra quyền admin ngay khi khởi tạo - hiển thị 403 thay vì redirect
@@ -22,6 +24,7 @@ class AdminController {
         $this->categoryModel = new CategoryModel($this->db);
         $this->voucherModel = new VoucherModel($this->db);
         $this->orderModel = new OrderModel($this->db);
+        $this->accountModel = new AccountModel($this->db);
     }
     
     /**
@@ -731,6 +734,229 @@ class AdminController {
             error_log("=== DEBUG UPLOAD END ===");
             return null;
         }
+    }
+    
+    // ========== ACCOUNT MANAGEMENT ==========
+    
+    /**
+     * Danh sách tài khoản
+     */
+    public function accounts() {
+        try {
+            // Lấy tất cả tài khoản
+            $accounts = $this->accountModel->getAllAccounts();
+            
+            // Thống kê tài khoản
+            $accountStats = $this->accountModel->getAccountStats();
+            
+            include_once 'app/views/admin/accounts/index.php';
+        } catch (Exception $e) {
+            error_log("Accounts Error: " . $e->getMessage());
+            $accounts = [];
+            $accountStats = [
+                'total_accounts' => 0,
+                'admin_accounts' => 0,
+                'user_accounts' => 0,
+                'recent_registrations' => 0
+            ];
+            $errors = ['accounts' => 'Lỗi tải dữ liệu tài khoản: ' . $e->getMessage()];
+            include_once 'app/views/admin/accounts/index.php';
+        }
+    }
+    
+    /**
+     * Form tạo tài khoản mới
+     */
+    public function createAccount() {
+        include_once 'app/views/admin/accounts/create.php';
+    }
+    
+    /**
+     * Lưu tài khoản mới
+     */
+    public function storeAccount() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = trim($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $confirmPassword = $_POST['confirm_password'] ?? '';
+            $fullname = trim($_POST['fullname'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $phone = trim($_POST['phone'] ?? '');
+            $address = trim($_POST['address'] ?? '');
+            $role = $_POST['role'] ?? 'user';
+            
+            $errors = [];
+            
+            // Validation
+            if (empty($username)) {
+                $errors['username'] = "Vui lòng nhập tên đăng nhập!";
+            } elseif ($this->accountModel->checkUsernameExists($username)) {
+                $errors['username'] = "Tên đăng nhập đã tồn tại!";
+            }
+            
+            if (empty($password)) {
+                $errors['password'] = "Vui lòng nhập mật khẩu!";
+            } elseif (strlen($password) < 6) {
+                $errors['password'] = "Mật khẩu phải có ít nhất 6 ký tự!";
+            }
+            
+            if ($password !== $confirmPassword) {
+                $errors['confirm_password'] = "Mật khẩu xác nhận không khớp!";
+            }
+            
+            if (empty($fullname)) {
+                $errors['fullname'] = "Vui lòng nhập họ tên!";
+            }
+            
+            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = "Email không hợp lệ!";
+            } elseif (!empty($email) && $this->accountModel->checkEmailExists($email)) {
+                $errors['email'] = "Email đã được sử dụng!";
+            }
+            
+            if (!in_array($role, ['user', 'admin'])) {
+                $errors['role'] = "Vai trò không hợp lệ!";
+            }
+            
+            if (count($errors) > 0) {
+                include_once 'app/views/admin/accounts/create.php';
+                return;
+            }
+            
+            try {
+                $result = $this->accountModel->save($username, $password, $fullname, $email, $phone, $address, $role);
+                if ($result) {
+                    header('Location: /webbanhang/admin/accounts?success=created');
+                    exit;
+                } else {
+                    $errors['save'] = "Lỗi khi tạo tài khoản!";
+                    include_once 'app/views/admin/accounts/create.php';
+                }
+            } catch (Exception $e) {
+                $errors['exception'] = "Lỗi hệ thống: " . $e->getMessage();
+                include_once 'app/views/admin/accounts/create.php';
+            }
+        }
+    }
+    
+    /**
+     * Form chỉnh sửa tài khoản
+     */
+    public function editAccount($accountId) {
+        $account = $this->accountModel->getById($accountId);
+        if (!$account) {
+            http_response_code(404);
+            include 'app/views/errors/404.php';
+            return;
+        }
+        
+        include_once 'app/views/admin/accounts/edit.php';
+    }
+    
+    /**
+     * Cập nhật tài khoản
+     */
+    public function updateAccount($accountId) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $account = $this->accountModel->getById($accountId);
+            if (!$account) {
+                http_response_code(404);
+                include 'app/views/errors/404.php';
+                return;
+            }
+            
+            $username = trim($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $confirmPassword = $_POST['confirm_password'] ?? '';
+            $fullname = trim($_POST['fullname'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $phone = trim($_POST['phone'] ?? '');
+            $address = trim($_POST['address'] ?? '');
+            $role = $_POST['role'] ?? 'user';
+            
+            $errors = [];
+            
+            // Validation
+            if (empty($username)) {
+                $errors['username'] = "Vui lòng nhập tên đăng nhập!";
+            } elseif ($this->accountModel->checkUsernameExists($username, $accountId)) {
+                $errors['username'] = "Tên đăng nhập đã tồn tại!";
+            }
+            
+            if (!empty($password) && strlen($password) < 6) {
+                $errors['password'] = "Mật khẩu phải có ít nhất 6 ký tự!";
+            }
+            
+            if (!empty($password) && $password !== $confirmPassword) {
+                $errors['confirm_password'] = "Mật khẩu xác nhận không khớp!";
+            }
+            
+            if (empty($fullname)) {
+                $errors['fullname'] = "Vui lòng nhập họ tên!";
+            }
+            
+            if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = "Email không hợp lệ!";
+            } elseif (!empty($email) && $this->accountModel->checkEmailExists($email, $accountId)) {
+                $errors['email'] = "Email đã được sử dụng!";
+            }
+            
+            if (!in_array($role, ['user', 'admin'])) {
+                $errors['role'] = "Vai trò không hợp lệ!";
+            }
+            
+            if (count($errors) > 0) {
+                include_once 'app/views/admin/accounts/edit.php';
+                return;
+            }
+            
+            try {
+                $result = $this->accountModel->updateAccount($accountId, [
+                    'username' => $username,
+                    'password' => !empty($password) ? password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]) : null,
+                    'fullname' => $fullname,
+                    'email' => !empty($email) ? $email : null,
+                    'phone' => !empty($phone) ? $phone : null,
+                    'address' => !empty($address) ? $address : null,
+                    'role' => $role
+                ]);
+                
+                if ($result) {
+                    header('Location: /webbanhang/admin/accounts?success=updated');
+                    exit;
+                } else {
+                    $errors['update'] = "Lỗi khi cập nhật tài khoản!";
+                    include_once 'app/views/admin/accounts/edit.php';
+                }
+            } catch (Exception $e) {
+                $errors['exception'] = "Lỗi hệ thống: " . $e->getMessage();
+                include_once 'app/views/admin/accounts/edit.php';
+            }
+        }
+    }
+    
+    /**
+     * Xóa tài khoản
+     */
+    public function deleteAccount($accountId) {
+        try {
+            // Không cho phép xóa tài khoản admin hiện tại
+            $currentUser = SessionHelper::getUser();
+            if ($currentUser['id'] == $accountId) {
+                header('Location: /webbanhang/admin/accounts?error=cannot_delete_self');
+                exit;
+            }
+            
+            $result = $this->accountModel->deleteAccount($accountId);
+            if ($result) {
+                header('Location: /webbanhang/admin/accounts?success=deleted');
+            } else {
+                header('Location: /webbanhang/admin/accounts?error=delete_failed');
+            }
+        } catch (Exception $e) {
+            header('Location: /webbanhang/admin/accounts?error=exception');
+        }
+        exit;
     }
 }
 ?> 

@@ -99,6 +99,8 @@
     </div>
 </div>
 
+
+
 <!-- Order Statistics -->
 <div class="row mb-5">
     <div class="col-lg-8">
@@ -163,6 +165,9 @@
                     </a>
                     <a href="/webbanhang/admin/orders" class="btn btn-outline-success">
                         <i class="bi bi-list-check me-2"></i>Xem tất cả đơn hàng
+                    </a>
+                    <a href="/webbanhang/admin/accounts" class="btn btn-outline-dark">
+                        <i class="bi bi-people me-2"></i>Quản lý tài khoản
                     </a>
                 </div>
             </div>
@@ -308,6 +313,8 @@
 .stats-red {
     background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%) !important;
 }
+
+
 </style>
 
 <?php include_once 'app/views/shares/footer.php'; ?> 

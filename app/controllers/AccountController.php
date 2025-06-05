@@ -379,4 +379,112 @@ class AccountController {
             include_once 'app/views/account/reset_password.php';
         }
     }
+
+    /**
+     * Xử lý đổi mật khẩu trong profile
+     */
+    public function changePassword() {
+        // Require user to be logged in
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['error'] = "Vui lòng đăng nhập!";
+            header('Location: /webbanhang/account/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $userId = $_SESSION['user_id'];
+            $currentPassword = $_POST['current_password'] ?? '';
+            $newPassword = $_POST['new_password'] ?? '';
+            $confirmPassword = $_POST['confirm_password'] ?? '';
+            $errors = [];
+
+            // Validation
+            if (empty($currentPassword)) {
+                $errors[] = "Vui lòng nhập mật khẩu hiện tại!";
+            }
+            if (empty($newPassword)) {
+                $errors[] = "Vui lòng nhập mật khẩu mới!";
+            } elseif (strlen($newPassword) < 6) {
+                $errors[] = "Mật khẩu mới phải có ít nhất 6 ký tự!";
+            }
+            if ($newPassword !== $confirmPassword) {
+                $errors[] = "Xác nhận mật khẩu không khớp!";
+            }
+            if ($currentPassword === $newPassword) {
+                $errors[] = "Mật khẩu mới phải khác mật khẩu hiện tại!";
+            }
+
+            if (count($errors) == 0) {
+                try {
+                    // Lấy thông tin user hiện tại
+                    $query = "SELECT * FROM account WHERE id = :id";
+                    $stmt = $this->db->prepare($query);
+                    $stmt->bindParam(':id', $userId);
+                    $stmt->execute();
+                    $user = $stmt->fetch(PDO::FETCH_OBJ);
+
+                    if ($user) {
+                        error_log("Change password: Found user ID: " . $user->id);
+                        error_log("Change password: Stored password hash: " . $user->password);
+                        error_log("Change password: Input current password: " . $currentPassword);
+                        
+                        $passwordValid = false;
+                        
+                        // Try modern bcrypt first
+                        if (password_verify($currentPassword, $user->password)) {
+                            $passwordValid = true;
+                            error_log("Change password: Password verification successful (bcrypt)");
+                        }
+                        // Fallback for legacy passwords (md5, sha1, plain text)
+                        elseif (md5($currentPassword) === $user->password) {
+                            $passwordValid = true;
+                            error_log("Change password: Password verification successful (md5 legacy)");
+                        }
+                        elseif (sha1($currentPassword) === $user->password) {
+                            $passwordValid = true;
+                            error_log("Change password: Password verification successful (sha1 legacy)");
+                        }
+                        elseif ($currentPassword === $user->password) {
+                            $passwordValid = true;
+                            error_log("Change password: Password verification successful (plain text legacy)");
+                        }
+                        
+                        if ($passwordValid) {
+                            // Mật khẩu hiện tại đúng, cập nhật mật khẩu mới với bcrypt
+                            $hashedNewPassword = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+                            
+                            $updateQuery = "UPDATE account SET password = :password WHERE id = :id";
+                            $updateStmt = $this->db->prepare($updateQuery);
+                            $updateStmt->bindParam(':password', $hashedNewPassword);
+                            $updateStmt->bindParam(':id', $userId);
+
+                            if ($updateStmt->execute()) {
+                                $_SESSION['success'] = "Đổi mật khẩu thành công!";
+                            } else {
+                                $errors[] = "Lỗi khi cập nhật mật khẩu!";
+                            }
+                        } else {
+                            error_log("Change password: Password verification failed for all methods");
+                            $errors[] = "Mật khẩu hiện tại không đúng!";
+                        }
+                    } else {
+                        error_log("Change password: User not found for ID: " . $userId);
+                        $errors[] = "Không tìm thấy tài khoản!";
+                    }
+                } catch (Exception $e) {
+                    error_log("Change password error: " . $e->getMessage());
+                    $errors[] = "Lỗi hệ thống!";
+                }
+            }
+
+            // Set errors to session if any
+            if (count($errors) > 0) {
+                $_SESSION['errors'] = $errors;
+            }
+
+            // Redirect back to profile
+            header('Location: /webbanhang/user/profile');
+            exit;
+        }
+    }
 } 

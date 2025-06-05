@@ -48,6 +48,8 @@ if (isset($url[0]) && $url[0] === 'account') {
         $action = $_SERVER['REQUEST_METHOD'] === 'POST' ? 'processResetPassword' : 'resetPassword';
     } elseif ($action === 'process-reset-password') {
         $action = 'processResetPassword';
+    } elseif ($action === 'change-password') {
+        $action = 'changePassword';
     }
 }
 
@@ -57,8 +59,8 @@ if (isset($url[0]) && $url[0] === 'admin') {
     $action = isset($url[1]) && $url[1] != '' ? $url[1] : 'dashboard';
     
     // For admin sub-actions like /admin/products/create
-    if (isset($url[2]) && $url[2] != '') {
-        if (in_array($url[1], ['products', 'categories', 'vouchers', 'orders'])) {
+            if (isset($url[2]) && $url[2] != '') {
+            if (in_array($url[1], ['products', 'categories', 'vouchers', 'orders', 'accounts'])) {
             // Special case for orders view
             if ($url[1] === 'orders' && $url[2] === 'view') {
                 $action = 'viewOrder';
@@ -131,6 +133,9 @@ if (isset($url[0]) && $url[0] === 'admin') {
                 break;
             case 'orders':
                 $action = 'orders';
+                break;
+            case 'accounts':
+                $action = 'accounts';
                 break;
             default:
                 $action = 'dashboard';
