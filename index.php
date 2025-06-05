@@ -36,6 +36,21 @@ if (empty($url[0])) {
     $action = isset($url[1]) && $url[1] != '' ? $url[1] : 'index';
 }
 
+// Special routing for account management
+if (isset($url[0]) && $url[0] === 'account') {
+    $controllerName = 'AccountController';
+    $action = isset($url[1]) && $url[1] != '' ? $url[1] : 'index';
+    
+    // Handle hyphenated actions
+    if ($action === 'forgot-password') {
+        $action = $_SERVER['REQUEST_METHOD'] === 'POST' ? 'processForgotPassword' : 'forgotPassword';
+    } elseif ($action === 'reset-password') {
+        $action = $_SERVER['REQUEST_METHOD'] === 'POST' ? 'processResetPassword' : 'resetPassword';
+    } elseif ($action === 'process-reset-password') {
+        $action = 'processResetPassword';
+    }
+}
+
 // Special routing for admin panel
 if (isset($url[0]) && $url[0] === 'admin') {
     $controllerName = 'AdminController';

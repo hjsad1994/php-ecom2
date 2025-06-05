@@ -161,6 +161,15 @@
             </div>
             
             <div class="form-floating">
+                <input type="email" class="form-control" id="email" name="email" 
+                       placeholder="Email" value="<?= $_POST['email'] ?? '' ?>" required>
+                <label for="email">Email</label>
+                <?php if(isset($errors['email'])): ?>
+                    <div class="text-danger mt-1"><small><?= $errors['email'] ?></small></div>
+                <?php endif; ?>
+            </div>
+            
+            <div class="form-floating">
                 <input type="password" class="form-control" id="password" name="password" 
                        placeholder="Mật khẩu" required onkeyup="checkPasswordStrength()">
                 <label for="password">Mật khẩu</label>

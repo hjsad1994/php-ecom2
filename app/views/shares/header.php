@@ -130,7 +130,7 @@ require_once 'app/helpers/AuthHelper.php';
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1200px∏
         }
         
         .user-greeting {

@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -175,6 +176,22 @@
             </div>
         <?php endif; ?>
         
+        <?php if(isset($_SESSION['success'])): ?>
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle me-2"></i>
+                <?= $_SESSION['success'] ?>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+        
+        <?php if(isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <?= $_SESSION['error'] ?>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+        
         <form action="/webbanhang/account/checkLogin" method="POST">
             <div class="form-floating">
                 <input type="text" class="form-control" id="username" name="username" 
@@ -212,6 +229,7 @@
         
         <div class="links">
             <p class="mb-2">Chưa có tài khoản? <a href="/webbanhang/account/register">Đăng ký ngay</a></p>
+            <p class="mb-2"><a href="/webbanhang/account/forgot-password"><i class="bi bi-key me-1"></i>Quên mật khẩu?</a></p>
             <p class="mb-0"><a href="/webbanhang/"><i class="bi bi-arrow-left me-1"></i>Quay về trang chủ</a></p>
         </div>
     </div>
