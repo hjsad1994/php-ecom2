@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Dashboard - Website Bán Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .response-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { border-left-color: #28a745 !important; }
+        .error { border-left-color: #dc3545 !important; }
+        .endpoint-card {
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+        }
+        .method-badge {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+        }
+        .get { background-color: #28a745; }
+        .post { background-color: #007bff; }
+        .put { background-color: #ffc107; color: #000; }
+        .delete { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">
+                    <i class="bi bi-gear"></i> API Test Dashboard
+                </h1>
+                <p class="text-center text-muted">Test các endpoints của Website Bán Hàng API</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Authentication APIs -->
+            <div class="col-12">
+                <h3 class="text-primary mb-3">🔐 Authentication APIs</h3>
+            </div>
+
+            <!-- Register -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/auth/register</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6>Request Body:</h6>
+                        <textarea id="register-data" class="form-control mb-2" rows="6">{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123",
+  "full_name": "Test User",
+  "phone": "0123456789",
+  "address": "123 Test Street"
+}</textarea>
+                        <button class="btn btn-primary" onclick="testRegister()">Test Register</button>
+                        <div id="register-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/auth/login</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6>Request Body:</h6>
+                        <textarea id="login-data" class="form-control mb-2" rows="3">{
+  "username": "admin",
+  "password": "admin"
+}</textarea>
+                        <button class="btn btn-primary" onclick="testLogin()">Test Login</button>
+                        <div id="login-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge get">GET</span>
+                        <strong>/api/auth/me</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Requires login session</p>
+                        <button class="btn btn-success" onclick="testUserInfo()">Test User Info</button>
+                        <div id="userinfo-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/auth/logout</strong>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-secondary" onclick="testLogout()">Test Logout</button>
+                        <div id="logout-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products APIs -->
+            <div class="col-12 mt-4">
+                <h3 class="text-success mb-3">📦 Products APIs</h3>
+            </div>
+
+            <!-- Get Products -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge get">GET</span>
+                        <strong>/api/products</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <label>Page:</label>
+                                <input type="number" id="products-page" class="form-control" value="1" min="1">
+                            </div>
+                            <div class="col-6">
+                                <label>Limit:</label>
+                                <input type="number" id="products-limit" class="form-control" value="5" min="1">
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="testProducts()">Test Get Products</button>
+                        <div id="products-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Product -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/products</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6>Request Body:</h6>
+                        <textarea id="create-product-data" class="form-control mb-2" rows="5">{
+  "name": "Test Product",
+  "description": "Test product description",
+  "price": 100000,
+  "category_id": 1
+}</textarea>
+                        <button class="btn btn-primary" onclick="testCreateProduct()">Test Create Product</button>
+                        <div id="create-product-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories APIs -->
+            <div class="col-12 mt-4">
+                <h3 class="text-warning mb-3">📂 Categories APIs</h3>
+            </div>
+
+            <!-- Get Categories -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge get">GET</span>
+                        <strong>/api/categories</strong>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-warning" onclick="testCategories()">Test Get Categories</button>
+                        <div id="categories-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Category -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/categories</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6>Request Body:</h6>
+                        <textarea id="create-category-data" class="form-control mb-2" rows="4">{
+  "name": "Test Category",
+  "description": "Test category description"
+}</textarea>
+                        <button class="btn btn-primary" onclick="testCreateCategory()">Test Create Category</button>
+                        <div id="create-category-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vouchers APIs -->
+            <div class="col-12 mt-4">
+                <h3 class="text-info mb-3">🎫 Vouchers APIs</h3>
+            </div>
+
+            <!-- Get Vouchers -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge get">GET</span>
+                        <strong>/api/vouchers</strong>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-info" onclick="testVouchers()">Test Get Vouchers</button>
+                        <div id="vouchers-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validate Voucher -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/vouchers/validate</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6>Request Body:</h6>
+                        <textarea id="validate-voucher-data" class="form-control mb-2" rows="4">{
+  "code": "DISCOUNT10",
+  "cart_total": 100000,
+  "product_ids": [1, 2]
+}</textarea>
+                        <button class="btn btn-primary" onclick="testValidateVoucher()">Test Validate Voucher</button>
+                        <div id="validate-voucher-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Management APIs -->
+            <div class="col-12 mt-4">
+                <h3 class="text-danger mb-3">👥 Account Management APIs (Admin Only)</h3>
+            </div>
+
+            <!-- Get Accounts -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge get">GET</span>
+                        <strong>/api/accounts</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Requires admin login</p>
+                        <button class="btn btn-danger" onclick="testAccounts()">Test Get Accounts</button>
+                        <div id="accounts-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Account -->
+            <div class="col-md-6">
+                <div class="card endpoint-card">
+                    <div class="card-header">
+                        <span class="method-badge post">POST</span>
+                        <strong>/api/accounts</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6>Request Body:</h6>
+                        <textarea id="create-account-data" class="form-control mb-2" rows="6">{
+  "username": "newuser",
+  "password": "password123",
+  "fullname": "New User",
+  "email": "newuser@example.com",
+  "role": "customer"
+}</textarea>
+                        <button class="btn btn-primary" onclick="testCreateAccount()">Test Create Account</button>
+                        <div id="create-account-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Info -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">ℹ️ API Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-info" onclick="testApiInfo()">Get API Documentation</button>
+                        <div id="apiinfo-response" class="response-box" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/webbanhang/api';
+
+        function showResponse(elementId, response, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response-box ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = JSON.stringify(response, null, 2);
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(API_BASE + url, options);
+                const data = await response.json();
+                return { data, isSuccess: response.ok };
+            } catch (error) {
+                return { data: { error: error.message }, isSuccess: false };
+            }
+        }
+
+        // Authentication Tests
+        async function testRegister() {
+            const data = document.getElementById('register-data').value;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+                // Make email unique
+                jsonData.email = `test${Date.now()}@example.com`;
+            } catch (e) {
+                showResponse('register-response', { error: 'Invalid JSON' }, false);
+                return;
+            }
+
+            const result = await makeRequest('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            showResponse('register-response', result.data, result.isSuccess);
+        }
+
+        async function testLogin() {
+            const data = document.getElementById('login-data').value;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                showResponse('login-response', { error: 'Invalid JSON' }, false);
+                return;
+            }
+
+            const result = await makeRequest('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            showResponse('login-response', result.data, result.isSuccess);
+        }
+
+        async function testUserInfo() {
+            const result = await makeRequest('/auth/me');
+            showResponse('userinfo-response', result.data, result.isSuccess);
+        }
+
+        async function testLogout() {
+            const result = await makeRequest('/auth/logout', { method: 'POST' });
+            showResponse('logout-response', result.data, result.isSuccess);
+        }
+
+        // Products Tests
+        async function testProducts() {
+            const page = document.getElementById('products-page').value;
+            const limit = document.getElementById('products-limit').value;
+            const result = await makeRequest(`/products?page=${page}&limit=${limit}`);
+            showResponse('products-response', result.data, result.isSuccess);
+        }
+
+        async function testCreateProduct() {
+            const data = document.getElementById('create-product-data').value;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                showResponse('create-product-response', { error: 'Invalid JSON' }, false);
+                return;
+            }
+
+            const result = await makeRequest('/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            showResponse('create-product-response', result.data, result.isSuccess);
+        }
+
+        // Categories Tests
+        async function testCategories() {
+            const result = await makeRequest('/categories');
+            showResponse('categories-response', result.data, result.isSuccess);
+        }
+
+        async function testCreateCategory() {
+            const data = document.getElementById('create-category-data').value;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                showResponse('create-category-response', { error: 'Invalid JSON' }, false);
+                return;
+            }
+
+            const result = await makeRequest('/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            showResponse('create-category-response', result.data, result.isSuccess);
+        }
+
+        // API Info Test
+        async function testApiInfo() {
+            const result = await makeRequest('');
+            showResponse('apiinfo-response', result.data, result.isSuccess);
+        }
+
+        // Vouchers Tests
+        async function testVouchers() {
+            const result = await makeRequest('/vouchers');
+            showResponse('vouchers-response', result.data, result.isSuccess);
+        }
+
+        async function testValidateVoucher() {
+            const data = document.getElementById('validate-voucher-data').value;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                showResponse('validate-voucher-response', { error: 'Invalid JSON' }, false);
+                return;
+            }
+
+            const result = await makeRequest('/vouchers/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            showResponse('validate-voucher-response', result.data, result.isSuccess);
+        }
+
+        // Account Management Tests
+        async function testAccounts() {
+            const result = await makeRequest('/accounts');
+            showResponse('accounts-response', result.data, result.isSuccess);
+        }
+
+        async function testCreateAccount() {
+            const data = document.getElementById('create-account-data').value;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                showResponse('create-account-response', { error: 'Invalid JSON' }, false);
+                return;
+            }
+
+            const result = await makeRequest('/accounts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonData)
+            });
+
+            showResponse('create-account-response', result.data, result.isSuccess);
+        }
+
+        // Auto-load some basic tests on page load
+        window.onload = function() {
+            testApiInfo();
+            testProducts();
+            testCategories();
+            testVouchers();
+        };
+    </script>
+</body>
+</html> 

@@ -1,361 +1,260 @@
-<?php include_once 'app/views/shares/header.php'; ?>
+<?php include 'app/views/shares/header.php'; ?>
 
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h1 class="display-6 fw-bold text-primary">
-            <i class="bi bi-grid-3x3-gap me-2"></i>
-            <?php if (AuthHelper::isAdmin()): ?>
-                Quản lý sản phẩm
-            <?php else: ?>
-                Sản phẩm
-            <?php endif; ?>
-        </h1>
-        <p class="text-muted mb-0">
-            <?php if (AuthHelper::isAdmin()): ?>
-                Quản lý toàn bộ sản phẩm trong hệ thống
-            <?php else: ?>
-                Khám phá bộ sưu tập sản phẩm chất lượng cao
-            <?php endif; ?>
-        </p>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Danh sách sản phẩm</h1>
+        <a href="/webbanhang/Product/add" class="btn btn-success">
+            <i class="fas fa-plus"></i> Thêm sản phẩm mới
+        </a>
     </div>
-    <div class="col-md-4 text-end">
-        <div class="d-flex justify-content-end align-items-center gap-2">
-            <?php if (AuthHelper::isAdmin()): ?>
-                <!-- Admin Actions -->
-                <a href="/webbanhang/admin/products/create" class="btn btn-success">
-                    <i class="bi bi-plus-circle me-1"></i>Thêm sản phẩm
-                </a>
-                <a href="/webbanhang/admin/dashboard" class="btn btn-outline-secondary">
-                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                </a>
-            <?php else: ?>
-                <!-- User Actions - Clean layout without search and cart -->
-                <a href="/webbanhang/" class="btn btn-outline-primary">
-                    <i class="bi bi-house me-1"></i>Trang chủ
-                </a>
-            <?php endif; ?>
+
+    <!-- Loading indicator -->
+    <div id="loading" class="text-center" style="display: none;">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Đang tải...</span>
         </div>
+    </div>
+
+    <!-- Product list -->
+    <div class="row" id="product-list">
+        <!-- Danh sách sản phẩm sẽ được tải từ API và hiển thị tại đây -->
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Product pagination" id="pagination-nav" style="display: none;">
+        <ul class="pagination justify-content-center" id="pagination">
+        </ul>
+    </nav>
+
+    <!-- Error message -->
+    <div id="error-message" class="alert alert-danger" style="display: none;">
     </div>
 </div>
 
-<?php if (empty($products)): ?>
-    <div class="text-center py-5">
-        <i class="bi bi-box-seam display-1 text-muted mb-3"></i>
-        <h3 class="text-muted">Không có sản phẩm nào</h3>
-        <p class="text-muted">
-            <?php if (AuthHelper::isAdmin()): ?>
-                Hiện tại chưa có sản phẩm nào trong hệ thống. Hãy thêm sản phẩm mới!
-            <?php else: ?>
-                Hiện tại chưa có sản phẩm nào được hiển thị.
-            <?php endif; ?>
-        </p>
-        <?php if (AuthHelper::isAdmin()): ?>
-            <a href="/webbanhang/admin/products/create" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-2"></i>Thêm sản phẩm đầu tiên
-            </a>
-        <?php else: ?>
-            <a href="/webbanhang/" class="btn btn-primary">
-                <i class="bi bi-house me-2"></i>Về trang chủ
-            </a>
-        <?php endif; ?>
-    </div>
-<?php else: ?>
-    <!-- Products Grid -->
-    <?php if (AuthHelper::isAdmin()): ?>
-        <!-- Admin Table View -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-list-ul me-2"></i>Danh sách sản phẩm 
-                    <span class="badge bg-primary"><?php echo count($products); ?> sản phẩm</span>
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Hình ảnh</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Danh mục</th>
-                                <th>Giá</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($products as $product): ?>
-                                <tr>
-                                    <td><?php echo $product->id; ?></td>
-                                    <td>
-                                        <?php 
-                                        $imagePath = $product->image ? '/webbanhang/public/uploads/products/' . $product->image : 'data:image/svg+xml;base64,' . base64_encode('<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#f8f9fa"/><text x="30" y="35" text-anchor="middle" font-size="10" fill="#6c757d">No Image</text></svg>');
-                                        ?>
-                                        <img src="<?php echo $imagePath; ?>" 
-                                             class="img-thumbnail" 
-                                             style="width: 60px; height: 60px; object-fit: cover;">
-                                    </td>
-                                    <td>
-                                        <strong><?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?></strong>
-                                        <div class="small text-muted">
-                                            <?php echo substr(strip_tags($product->description ?? ''), 0, 50) . '...'; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?php echo isset($product->category_name) ? htmlspecialchars($product->category_name, ENT_QUOTES, 'UTF-8') : '<em>Chưa phân loại</em>'; ?>
-                                    </td>
-                                    <td>
-                                        <span class="fw-bold text-primary">
-                                            <?php echo number_format($product->price, 0, ',', '.'); ?> đ
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success">Còn hàng</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="/webbanhang/product/show/<?php echo $product->id; ?>" 
-                                               class="btn btn-outline-info" title="Xem">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="/webbanhang/admin/products/edit/<?php echo $product->id; ?>" 
-                                               class="btn btn-outline-warning" title="Sửa">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <button class="btn btn-outline-danger" 
-                                                    title="Xóa"
-                                                    onclick="confirmDelete(<?php echo $product->id; ?>, '<?php echo addslashes($product->name); ?>')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    <?php else: ?>
-        <!-- User Grid View -->
-        <div class="row">
-            <?php foreach ($products as $product): ?>
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm product-card">
-                        <!-- Product Image -->
-                        <div class="position-relative overflow-hidden product-image-container">
-                            <?php 
-                            $imagePath = $product->image ? '/webbanhang/public/uploads/products/' . $product->image : 'data:image/svg+xml;base64,' . base64_encode('<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="300" fill="#f8f9fa"/><circle cx="150" cy="130" r="25" fill="none" stroke="#dee2e6" stroke-width="3"/><path d="M135 130 L150 145 L165 130 M140 135 L160 135" stroke="#dee2e6" stroke-width="3" fill="none"/><text x="150" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#6c757d">Không có ảnh</text></svg>');
-                            ?>
-                            <img src="<?php echo $imagePath; ?>" 
-                                 class="card-img-top product-image" 
-                                 alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>"
-                                 loading="lazy">
-                            
-                            <!-- Product Badge -->
-                            <div class="position-absolute top-0 start-0 p-2">
-                                <span class="badge bg-primary">Mới</span>
-                            </div>
-
-                            <!-- Quick Actions -->
-                            <div class="position-absolute top-0 end-0 p-2">
-                                <div class="btn-group-vertical">
-                                    <a href="/webbanhang/product/show/<?php echo $product->id; ?>" 
-                                       class="btn btn-sm btn-light" title="Xem chi tiết">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-light" title="Yêu thích">
-                                        <i class="bi bi-heart"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Product Info -->
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title text-truncate" title="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>">
-                                <?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>
-                            </h5>
-                            
-                            <!-- Category -->
-                            <div class="mb-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-tag me-1"></i>
-                                    <?php echo isset($product->category_name) ? htmlspecialchars($product->category_name, ENT_QUOTES, 'UTF-8') : 'Chưa phân loại'; ?>
-                                </small>
-                            </div>
-
-                            <!-- Description -->
-                            <p class="card-text text-muted small flex-grow-1">
-                                <?php 
-                                $description = strip_tags($product->description ?? '');
-                                echo strlen($description) > 100 ? substr($description, 0, 100) . '...' : $description;
-                                ?>
-                            </p>
-
-                            <!-- Price -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <span class="h5 text-primary fw-bold">
-                                        <?php echo number_format($product->price, 0, ',', '.'); ?> đ
-                                    </span>
-                                </div>
-                                <div class="text-end">
-                                    <div class="text-warning small">
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star-fill"></i>
-                                        <i class="bi bi-star"></i>
-                                        <span class="text-muted">(4.0)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="d-grid gap-2">
-                                <div class="btn-group">
-                                    <a href="/webbanhang/product/show/<?php echo $product->id; ?>" 
-                                       class="btn btn-outline-primary">
-                                        <i class="bi bi-eye me-1"></i>Chi tiết
-                                    </a>
-                                    <button class="btn btn-primary" onclick="addToCart(<?php echo $product->id; ?>)">
-                                        <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-<?php endif; ?>
-
-<style>
-.product-card {
-    transition: all 0.3s ease;
-    border: none;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-}
-
-.product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
-}
-
-.product-image-container {
-    height: 300px;
-    border-radius: 12px 12px 0 0;
-    overflow: hidden;
-    background: #f8f9fa;
-}
-
-.product-card .product-image {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    object-fit: cover;
-    object-position: center;
-    transition: transform 0.3s ease;
-    display: block;
-}
-
-.product-card:hover .product-image {
-    transform: scale(1.05);
-}
-
-.btn-group-vertical .btn {
-    opacity: 0;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.product-card:hover .btn-group-vertical .btn {
-    opacity: 1;
-}
-
-.btn {
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover, .btn-outline-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(13,110,253,0.3);
-}
-
-@media (max-width: 768px) {
-    .product-card:hover {
-        transform: translateY(-4px);
-    }
-    
-    .product-image-container {
-        height: 250px;
-    }
-    
-    .btn-group-vertical .btn {
-        opacity: 1; /* Always show on mobile */
-    }
-}
-</style>
+<?php include 'app/views/shares/footer.php'; ?>
 
 <script>
-<?php if (!AuthHelper::isAdmin()): ?>
-// User functions
-function addToCart(productId) {
-    const formData = new FormData();
-    formData.append('product_id', productId);
-    formData.append('quantity', 1);
+let currentPage = 1;
+const productsPerPage = 8;
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadProducts(currentPage);
+});
+
+function loadProducts(page = 1) {
+    showLoading(true);
     
-    fetch('/webbanhang/user/cart/add', {
-        method: 'POST',
-        body: formData
+    fetch(`/webbanhang/api/products?page=${page}&limit=${productsPerPage}`)
+        .then(response => response.json())
+        .then(data => {
+            showLoading(false);
+            
+            if (data.success) {
+                displayProducts(data.data.products);
+                displayPagination(data.data.pagination);
+                hideError();
+            } else {
+                showError(data.message || 'Có lỗi xảy ra khi tải dữ liệu');
+            }
+        })
+        .catch(error => {
+            showLoading(false);
+            console.error('Error:', error);
+            showError('Không thể kết nối đến server');
+        });
+}
+
+function displayProducts(products) {
+    const productList = document.getElementById('product-list');
+    
+    if (!products || products.length === 0) {
+        productList.innerHTML = '<div class="col-12"><div class="alert alert-info">Không có sản phẩm nào.</div></div>';
+        return;
+    }
+    
+    productList.innerHTML = '';
+    
+    products.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'col-md-6 col-lg-3 mb-4';
+        
+        productCard.innerHTML = `
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="/webbanhang/Product/show/${product.id}" class="text-decoration-none">
+                            ${escapeHtml(product.name)}
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted small">${escapeHtml(product.description || '')}</p>
+                    <p class="card-text">
+                        <strong class="text-primary">${formatPrice(product.price)} VND</strong>
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            Danh mục: ${escapeHtml(product.category_name || 'Chưa phân loại')}
+                        </small>
+                    </p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <div class="btn-group w-100">
+                        <a href="/webbanhang/Product/edit/${product.id}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        productList.appendChild(productCard);
+    });
+}
+
+function displayPagination(pagination) {
+    const paginationNav = document.getElementById('pagination-nav');
+    const paginationList = document.getElementById('pagination');
+    
+    if (pagination.total_pages <= 1) {
+        paginationNav.style.display = 'none';
+        return;
+    }
+    
+    paginationNav.style.display = 'block';
+    paginationList.innerHTML = '';
+    
+    // Previous button
+    if (pagination.has_prev) {
+        const prevLi = document.createElement('li');
+        prevLi.className = 'page-item';
+        prevLi.innerHTML = `
+            <a class="page-link" href="#" onclick="loadProducts(${pagination.current_page - 1}); return false;">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        `;
+        paginationList.appendChild(prevLi);
+    }
+    
+    // Page numbers
+    for (let i = 1; i <= pagination.total_pages; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${i === pagination.current_page ? 'active' : ''}`;
+        pageLi.innerHTML = `
+            <a class="page-link" href="#" onclick="loadProducts(${i}); return false;">${i}</a>
+        `;
+        paginationList.appendChild(pageLi);
+    }
+    
+    // Next button
+    if (pagination.has_next) {
+        const nextLi = document.createElement('li');
+        nextLi.className = 'page-item';
+        nextLi.innerHTML = `
+            <a class="page-link" href="#" onclick="loadProducts(${pagination.current_page + 1}); return false;">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        `;
+        paginationList.appendChild(nextLi);
+    }
+    
+    currentPage = pagination.current_page;
+}
+
+function deleteProduct(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+        return;
+    }
+    
+    fetch(`/webbanhang/api/products/${id}`, {
+        method: 'DELETE'
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(data.message);
-            // Optionally redirect to cart
-            window.location.href = '/webbanhang/user/cart';
+            // Reload current page
+            loadProducts(currentPage);
+            showSuccessMessage('Sản phẩm đã được xóa thành công');
         } else {
-            alert(data.message || 'Có lỗi xảy ra');
+            showError(data.message || 'Xóa sản phẩm thất bại');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
+        showError('Không thể kết nối đến server');
     });
 }
-<?php else: ?>
-// Admin functions
-function confirmDelete(productId, productName) {
-    if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${productName}"?`)) {
-        fetch(`/webbanhang/admin/products/delete/${productId}`, {
-            method: 'POST'
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Xóa sản phẩm thành công');
-                location.reload();
-            } else {
-                alert('Có lỗi xảy ra khi xóa sản phẩm');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi xóa sản phẩm');
-        });
-    }
+
+function showLoading(show) {
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
 }
-<?php endif; ?>
+
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+function hideError() {
+    document.getElementById('error-message').style.display = 'none';
+}
+
+function showSuccessMessage(message) {
+    // Create temporary success alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+function formatPrice(price) {
+    return new Intl.NumberFormat('vi-VN').format(price);
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+}
 </script>
 
-<?php include_once 'app/views/shares/footer.php'; ?> 
+<style>
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+.btn-group .btn {
+    flex: 1;
+}
+</style> 

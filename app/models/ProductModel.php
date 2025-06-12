@@ -11,7 +11,7 @@ class ProductModel
     
     public function getProducts()
     {
-        $query = "SELECT p.id, p.name, p.description, p.price, p.image, c.name as category_name
+        $query = "SELECT p.id, p.name, p.description, p.price, c.name as category_name
                   FROM " . $this->table_name . " p
                   LEFT JOIN category c ON p.category_id = c.id";
         $stmt = $this->conn->prepare($query);
@@ -30,7 +30,7 @@ class ProductModel
         return $result;
     }
     
-    public function addProduct($name, $description, $price, $category_id, $image = null)
+    public function addProduct($name, $description, $price, $category_id)
     {
         $errors = [];
         if (empty($name)) {
@@ -46,12 +46,11 @@ class ProductModel
             return $errors;
         }
         
-        $query = "INSERT INTO " . $this->table_name . " (name, description, price, category_id, image) 
-                  VALUES (:name, :description, :price, :category_id, :image)";
+        $query = "INSERT INTO " . $this->table_name . " (name, description, price, category_id) 
+                  VALUES (:name, :description, :price, :category_id)";
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
-        // Preserve HTML tags in description for rich text formatting
-        $description = $description; // Keep HTML tags intact
+        $description = htmlspecialchars(strip_tags($description));
         $price = htmlspecialchars(strip_tags($price));
         
         // Check if category_id is null before applying string functions
@@ -65,7 +64,6 @@ class ProductModel
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':price', $price);
         $stmt->bindParam(':category_id', $category_id, PDO::PARAM_INT); // Use PDO::PARAM_INT to handle NULL properly
-        $stmt->bindParam(':image', $image);
         
         if ($stmt->execute()) {
             return true;
@@ -73,22 +71,15 @@ class ProductModel
         return false;
     }
     
-    public function updateProduct($id, $name, $description, $price, $category_id, $image = null)
+    public function updateProduct($id, $name, $description, $price, $category_id)
     {
-        if ($image !== null) {
-            $query = "UPDATE " . $this->table_name . " 
-                      SET name=:name, description=:description, price=:price, category_id=:category_id, image=:image 
-                      WHERE id=:id";
-        } else {
-            $query = "UPDATE " . $this->table_name . " 
-                      SET name=:name, description=:description, price=:price, category_id=:category_id 
-                      WHERE id=:id";
-        }
+        $query = "UPDATE " . $this->table_name . " 
+                  SET name=:name, description=:description, price=:price, category_id=:category_id 
+                  WHERE id=:id";
         
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
-        // Preserve HTML tags in description for rich text formatting
-        $description = $description; // Keep HTML tags intact
+        $description = htmlspecialchars(strip_tags($description));
         $price = htmlspecialchars(strip_tags($price));
         
         if ($category_id !== null) {
@@ -100,10 +91,6 @@ class ProductModel
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':price', $price);
         $stmt->bindParam(':category_id', $category_id, PDO::PARAM_INT);
-        
-        if ($image !== null) {
-            $stmt->bindParam(':image', $image);
-        }
         
         if ($stmt->execute()) {
             return true;
