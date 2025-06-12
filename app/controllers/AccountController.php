@@ -76,9 +76,9 @@ class AccountController {
                 include_once 'app/views/account/register.php';
             } else {
                 try {
-                    $password = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+                    $hashedPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
                     error_log("AccountController save - attempting to save user: $username");
-                    $result = $this->accountModel->save($username, $fullName, $email, $password);
+                    $result = $this->accountModel->save($username, $hashedPassword, $fullName, $email);
                     if($result){
                         error_log("AccountController save - success, sending welcome email");
                         
