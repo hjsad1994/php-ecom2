@@ -98,6 +98,12 @@ if (isset($url[0]) && $url[0] === 'admin') {
                 $action = 'update' . $singular; // e.g., updateCategory, updateVoucher
                 $url[2] = $url[3]; // Pass ID as parameter
             }
+            // Special case for toggle status actions with ID (for accounts)
+            elseif ($url[2] === 'toggle-status' && isset($url[3])) {
+                $singular = ($url[1] === 'accounts') ? 'Account' : ucfirst(rtrim($url[1], 's'));
+                $action = 'toggle' . $singular . 'Status'; // e.g., toggleAccountStatus
+                $url[2] = $url[3]; // Pass ID as parameter
+            }
             // Special case for create actions
             elseif ($url[2] === 'create') {
                 // Map plural to singular properly

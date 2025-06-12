@@ -936,6 +936,62 @@ class AdminController {
     }
     
     /**
+     * Toggle trạng thái tài khoản (active/disabled)
+     */
+    public function toggleAccountStatus($accountId) {
+        try {
+            error_log("=== Toggle Account Status DEBUG ===");
+            error_log("Account ID: " . $accountId);
+            
+            $account = $this->accountModel->getById($accountId);
+            if (!$account) {
+                error_log("Account not found: " . $accountId);
+                http_response_code(404);
+                include 'app/views/errors/404.php';
+                return;
+            }
+            
+            error_log("Account found: " . print_r($account, true));
+            
+            // Không cho phép disable tài khoản admin
+            if ($account['role'] === 'admin') {
+                error_log("Cannot disable admin account");
+                header('Location: /webbanhang/admin/accounts?error=cannot_disable_admin');
+                exit;
+            }
+            
+            // Lấy trạng thái hiện tại và đảo ngược
+            $currentStatus = $account['status'] ?? 'active';
+            $newStatus = ($currentStatus === 'active') ? 'disabled' : 'active';
+            
+            error_log("Current status: " . $currentStatus);
+            error_log("New status: " . $newStatus);
+            
+            // Cập nhật trạng thái
+            $result = $this->accountModel->updateAccount($accountId, [
+                'status' => $newStatus
+            ]);
+            
+            error_log("Update result: " . ($result ? 'true' : 'false'));
+            
+            if ($result) {
+                $statusText = ($newStatus === 'active') ? 'kích hoạt' : 'vô hiệu hóa';
+                error_log("Success - redirecting with status: " . $statusText);
+                header("Location: /webbanhang/admin/accounts?success=status_updated&action={$statusText}");
+                exit;
+            } else {
+                error_log("Update failed");
+                header('Location: /webbanhang/admin/accounts?error=update_failed');
+                exit;
+            }
+        } catch (Exception $e) {
+            error_log("Toggle account status error: " . $e->getMessage());
+            header('Location: /webbanhang/admin/accounts?error=system_error');
+            exit;
+        }
+    }
+
+    /**
      * Xóa tài khoản
      */
     public function deleteAccount($accountId) {

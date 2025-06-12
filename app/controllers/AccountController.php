@@ -138,23 +138,28 @@ class AccountController {
             
             $account = $this->accountModel->getAccountByUsername($username);
             if ($account) {
-                $pwd_hashed = $account->password;
-                // Check mật khẩu
-                if (password_verify($password, $pwd_hashed)) {
-                    session_start();
-                    $_SESSION['username'] = $account->username;
-                    $_SESSION['user_role'] = $account->role ?? 'user';
-                    $_SESSION['user_id'] = $account->id;
-                    
-                    // Redirect dựa trên role
-                    if ($account->role === 'admin') {
-                        header('Location: /webbanhang/admin/dashboard');
-                    } else {
-                        header('Location: /webbanhang/product');
-                    }
-                    exit;
+                // Kiểm tra trạng thái tài khoản (nếu có cột status)
+                if (isset($account->status) && $account->status === 'disabled') {
+                    $errors['login'] = "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ admin.";
                 } else {
-                    $errors['login'] = "Mật khẩu không đúng.";
+                    $pwd_hashed = $account->password;
+                    // Check mật khẩu
+                    if (password_verify($password, $pwd_hashed)) {
+                        session_start();
+                        $_SESSION['username'] = $account->username;
+                        $_SESSION['user_role'] = $account->role ?? 'user';
+                        $_SESSION['user_id'] = $account->id;
+                        
+                        // Redirect dựa trên role
+                        if ($account->role === 'admin') {
+                            header('Location: /webbanhang/admin/dashboard');
+                        } else {
+                            header('Location: /webbanhang/product');
+                        }
+                        exit;
+                    } else {
+                        $errors['login'] = "Mật khẩu không đúng.";
+                    }
                 }
             } else {
                 $errors['login'] = "Không tìm thấy tài khoản";

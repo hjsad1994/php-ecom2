@@ -75,7 +75,7 @@ class AccountModel
      * Lấy tất cả tài khoản
      */
     public function getAllAccounts() {
-        $query = "SELECT id, username, fullname, email, phone, address, role, created_at FROM " . $this->table_name . " ORDER BY created_at DESC";
+        $query = "SELECT id, username, fullname, email, phone, address, role, status, created_at FROM " . $this->table_name . " ORDER BY created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -168,6 +168,11 @@ class AccountModel
         if (isset($data['role'])) {
             $fields[] = "role = :role";
             $params[':role'] = $data['role'];
+        }
+        
+        if (isset($data['status'])) {
+            $fields[] = "status = :status";
+            $params[':status'] = $data['status'];
         }
         
         if (empty($fields)) {

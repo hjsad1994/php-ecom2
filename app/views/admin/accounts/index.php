@@ -123,6 +123,41 @@
         <h4 class="card-title mb-0">
             <i class="bi bi-table me-2 text-primary"></i>Danh sách tài khoản
         </h4>
+        
+        <?php if (isset($_GET['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <?php if ($_GET['success'] === 'created'): ?>
+                Tạo tài khoản thành công!
+            <?php elseif ($_GET['success'] === 'updated'): ?>
+                Cập nhật tài khoản thành công!
+            <?php elseif ($_GET['success'] === 'deleted'): ?>
+                Xóa tài khoản thành công!
+            <?php elseif ($_GET['success'] === 'status_updated'): ?>
+                <?php $action = $_GET['action'] ?? 'cập nhật'; ?>
+                Đã <?php echo htmlspecialchars($action); ?> trạng thái tài khoản thành công!
+            <?php endif; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <?php if ($_GET['error'] === 'cannot_disable_admin'): ?>
+                Không thể vô hiệu hóa tài khoản admin!
+            <?php elseif ($_GET['error'] === 'update_failed'): ?>
+                Lỗi khi cập nhật trạng thái tài khoản!
+            <?php elseif ($_GET['error'] === 'system_error'): ?>
+                Lỗi hệ thống! Vui lòng thử lại sau.
+            <?php elseif ($_GET['error'] === 'delete_failed'): ?>
+                Lỗi khi xóa tài khoản!
+            <?php elseif ($_GET['error'] === 'cannot_delete_self'): ?>
+                Không thể xóa tài khoản của chính mình!
+            <?php endif; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
     </div>
     <div class="card-body">
         <?php if (!empty($accounts)): ?>
@@ -136,6 +171,7 @@
                         <th>Email</th>
                         <th>Điện thoại</th>
                         <th>Vai trò</th>
+                        <th>Trạng thái</th>
                         <th>Ngày tạo</th>
                         <th>Thao tác</th>
                     </tr>
@@ -180,6 +216,19 @@
                             <?php endif; ?>
                         </td>
                         <td>
+                            <?php 
+                            $status = $account['status'] ?? 'active';
+                            if ($status === 'active'): ?>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Vô hiệu
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
                             <small class="text-muted">
                                 <?php echo date('d/m/Y H:i', strtotime($account['created_at'])); ?>
                             </small>
@@ -190,6 +239,24 @@
                                    class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                
+                                <?php if ($account['role'] !== 'admin'): ?>
+                                <?php $status = $account['status'] ?? 'active'; ?>
+                                <?php if ($status === 'active'): ?>
+                                <a href="/webbanhang/admin/accounts/toggle-status/<?php echo $account['id']; ?>" 
+                                   class="btn btn-sm btn-outline-warning" title="Vô hiệu hóa tài khoản"
+                                   onclick="return confirm('Bạn có chắc muốn vô hiệu hóa tài khoản này?')">
+                                    <i class="bi bi-person-x"></i>
+                                </a>
+                                <?php else: ?>
+                                <a href="/webbanhang/admin/accounts/toggle-status/<?php echo $account['id']; ?>" 
+                                   class="btn btn-sm btn-outline-success" title="Kích hoạt tài khoản"
+                                   onclick="return confirm('Bạn có chắc muốn kích hoạt tài khoản này?')">
+                                    <i class="bi bi-person-check"></i>
+                                </a>
+                                <?php endif; ?>
+                                <?php endif; ?>
+                                
                                 <?php if ($account['id'] != SessionHelper::getUserId()): ?>
                                 <button type="button" class="btn btn-sm btn-outline-danger" 
                                         onclick="confirmDelete(<?php echo $account['id']; ?>, '<?php echo htmlspecialchars($account['username']); ?>')"
